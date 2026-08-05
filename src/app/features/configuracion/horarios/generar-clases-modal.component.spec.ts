@@ -1,0 +1,90 @@
+import { describe, it, expect } from 'vitest';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { GenerarClasesModalComponent } from './generar-clases-modal.component';
+
+function setup(generables: number, error = ''): ComponentFixture<GenerarClasesModalComponent> {
+  // reset explícito: mismo patrón que horario-form-modal.component.spec.ts, necesario porque
+  // más de un it() en este archivo llama setup()/setupGenerando() más de una vez.
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+  const fixture = TestBed.createComponent(GenerarClasesModalComponent);
+  fixture.componentRef.setInput('generables', generables);
+  fixture.componentRef.setInput('error', error);
+  fixture.detectChanges();
+  fixture.componentInstance.open();
+  fixture.detectChanges();
+  return fixture;
+}
+
+function setupGenerando(generables: number): ComponentFixture<GenerarClasesModalComponent> {
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+  const fixture = TestBed.createComponent(GenerarClasesModalComponent);
+  fixture.componentRef.setInput('generables', generables);
+  fixture.componentRef.setInput('generating', true);
+  fixture.detectChanges();
+  fixture.componentInstance.open();
+  fixture.detectChanges();
+  return fixture;
+}
+
+/** Alias con nombre propio: mismo setup(), sólo para que el it() se lea igual que el brief. */
+const setupConError = (generables: number, error: string) => setup(generables, error);
+
+const el = (f: { nativeElement: HTMLElement }, sel: string) =>
+  f.nativeElement.querySelector(sel) as HTMLInputElement;
+
+describe('GenerarClasesModalComponent', () => {
+  it('arranca con hoy y hoy + 28 días', () => {
+    // Cuatro semanas: el horizonte con el que trabaja un club, y obliga a ampliar a
+    // propósito si se quiere más.
+    const f = setup(8);
+    const desde = new Date(el(f, '[data-test="desde"]').value + 'T00:00:00Z');
+    const hasta = new Date(el(f, '[data-test="hasta"]').value + 'T00:00:00Z');
+    expect((hasta.getTime() - desde.getTime()) / 86_400_000).toBe(28);
+  });
+
+  it('dice HASTA cuántos horarios, no un número exacto', () => {
+    // El contador replica tres de los cinco filtros del service: los de vigencia dependen
+    // del rango elegido y no se pueden saber acá (§8.4).
+    expect(setup(8).nativeElement.textContent).toContain('hasta 8 horarios');
+  });
+
+  it('avisa que no se puede deshacer', () => {
+    expect(setup(8).nativeElement.querySelector('.notice')!.textContent)
+      .toContain('no se pueden borrar');
+  });
+
+  it('el botón de confirmar NO es rojo: esto CREA, no destruye', () => {
+    // Rojo significa "destruye" en el DS y sus dos únicos consumidores son borrar y
+    // cancelar. Además el botón que abre este modal es .btn-ghost (azul).
+    const btn = setup(8).nativeElement.querySelector('[data-test="confirmar"]') as HTMLButtonElement;
+    expect(btn.classList.contains('btn-danger')).toBe(false);
+    expect(btn.classList.contains('btn-primary')).toBe(true);
+  });
+
+  it('emite el rango crudo', () => {
+    const f = setup(8);
+    let emitido: { from: string; to: string } | undefined;
+    f.componentInstance.confirmed.subscribe((v: { from: string; to: string }) => { emitido = v; });
+    el(f, '[data-test="desde"]').value = '2026-08-03';
+    el(f, '[data-test="desde"]').dispatchEvent(new Event('input'));
+    el(f, '[data-test="hasta"]').value = '2026-08-30';
+    el(f, '[data-test="hasta"]').dispatchEvent(new Event('input'));
+    f.detectChanges();
+    (f.nativeElement.querySelector('[data-test="confirmar"]') as HTMLButtonElement).click();
+    expect(emitido).toEqual({ from: '2026-08-03', to: '2026-08-30' });
+  });
+
+  it('el botón se deshabilita mientras genera: un doble click DUPLICA de verdad', () => {
+    // §3.11: la idempotencia del backend es findFirst+create sin transacción y sin @@unique.
+    const f = setupGenerando(8);
+    expect((f.nativeElement.querySelector('[data-test="confirmar"]') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('muestra el error de generación adentro del modal', () => {
+    const f = setupConError(8, 'El rango no puede superar los 60 días.');
+    expect(f.nativeElement.querySelector('[role="alert"]')!.textContent).toContain('60 días');
+  });
+});

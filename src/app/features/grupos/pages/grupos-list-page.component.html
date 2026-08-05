@@ -1,0 +1,70 @@
+@if (facade.loading()) {
+  <p class="grupos-status">Cargando grupos…</p>
+} @else if (facade.error()) {
+  <p class="grupos-status" role="alert">No se pudo cargar los grupos. {{ errorText() }}</p>
+} @else {
+  <section id="view-grupos">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Grupos y clases</h3>
+        <span class="sub">Tocá un grupo para ver alumnos, lista de espera y sesiones</span>
+        <div class="search-box">
+          <label class="sr-only" for="grp-q">Buscar grupo por nombre o profesor</label>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <input id="grp-q" type="search" placeholder="Buscar grupo…" [value]="query()" (input)="onSearch($event)">
+        </div>
+      </div>
+
+      <div class="cat-filter">
+        @for (c of categories(); track c) {
+          <button type="button" class="fchip" [class.on]="category() === c"
+                  [attr.aria-pressed]="category() === c" (click)="category.set(c)">{{ c }}</button>
+        }
+      </div>
+
+      @if (facade.groups().length) {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Grupo</th><th>Categoría</th><th>Profe</th><th>Día y hora</th><th>Cupo</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of filtered(); track g.id) {
+                <tr class="row-link" (click)="open(g)">
+                  <td>
+                    <div class="grp-cell">
+                      <span class="avatar-sm" aria-hidden="true">{{ g.teacherInitials }}</span>
+                      <div>
+                        <div class="grp-name">{{ g.name }}</div>
+                        <div class="grp-meta">
+                          {{ g.courtName }}@if (g.waitlist.length) { · {{ g.waitlist.length }} en espera }
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="cat-badge">{{ g.category }}</span></td>
+                  <td class="grp-prof">{{ g.teacher }}</td>
+                  <td class="mono grp-prof">{{ g.day }} {{ g.time }}</td>
+                  <td><app-cupo-cell [enrolled]="g.roster.length" [capacity]="g.capacity" /></td>
+                  <td class="cell-end">
+                    <button type="button" class="row-open" [attr.aria-label]="'Abrir grupo ' + g.name"
+                            (click)="$event.stopPropagation(); open(g)">›</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="grupos-empty">Sin grupos para esa búsqueda</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="a-empty">Todavía no hay grupos en el club</div>
+      }
+    </div>
+  </section>
+}

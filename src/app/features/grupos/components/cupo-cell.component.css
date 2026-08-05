@@ -1,0 +1,45 @@
+/* Celda de cupo. Feature-local: es vocabulario de Grupos, no del design system.
+   Fuente: index-v2.html:395-401. */
+
+.mini-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-border-strong);
+  overflow: hidden;
+  width: 78px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.mini-bar i {
+  display: block;
+  height: 100%;
+  background: var(--color-secondary);
+  border-radius: 3px;
+}
+
+.mini-bar i.isfull {
+  background: var(--color-primary);
+}
+
+.mini-bar i.low {
+  background: var(--color-accent-mark);
+}
+
+.cupo-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.cupo-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--text-xs);
+  color: var(--color-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cupo-num.isfull {
+  color: var(--color-primary);
+}

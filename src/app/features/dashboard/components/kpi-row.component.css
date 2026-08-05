@@ -1,0 +1,15 @@
+/* KPIs — estilos del propio app-kpi-row (encapsulados en este componente). */
+.kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); margin-bottom: var(--space-md); }
+.kpi { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-md); box-shadow: var(--shadow-md); }
+.kpi .k-lbl { font-size: var(--text-2xs); color: var(--color-fg-muted); font-weight: 600; display: flex; align-items: center; gap: var(--space-sm); }
+.kpi .k-val { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-xl); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.kpi .k-val small { font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-fg-subtle); font-weight: 500; }
+.kpi .k-ico { width: 8px; height: 8px; border-radius: 3px; flex: 0 0 auto; }
+
+@media (min-width: 768px) {
+  .kpis { gap: var(--space-md); }
+  .kpi .k-val { font-size: var(--text-2xl); }
+}
+@media (min-width: 1024px) {
+  .kpis { grid-template-columns: repeat(4, 1fr); }
+}

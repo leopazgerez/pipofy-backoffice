@@ -1,0 +1,20 @@
+/* Los primitivos (.panel, .panel-head, .field, .checkbox-row, .notice, .btn*) viven en
+   styles/components.css. Acá va SÓLO lo específico de esta pantalla.
+
+   `.panel` no declara padding —lo declaran .panel-head y .a-body— así que un formulario
+   metido directo adentro tocaría el borde. Este contenedor es el que lo separa.
+
+   Es la única pantalla del proyecto con un formulario dentro de un .panel: las de auth y
+   onboarding usan `<form class="card">` y viven fuera del shell. */
+.club-form {
+  padding: var(--space-lg);
+  max-width: 520px;
+}
+
+/* No se reusa `.modal-foot`: su fondo `var(--color-muted)` se saldría por las dos esquinas
+   de abajo del .panel, que no tiene `overflow:hidden` (`.acard` sí, `.panel` no). */
+.club-foot {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}

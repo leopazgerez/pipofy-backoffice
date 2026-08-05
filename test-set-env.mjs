@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { parseEnv, buildEnvironment } from './set-env.mjs';
+
+const full = `
+# comentario
+NG_API_BASE_URL=/api
+NG_REALTIME_BASE_URL=/api/stream
+NG_STORAGE_BASE_PATH=/uploads
+NG_MERCADOPAGO_PUBLIC_KEY="TEST-abc"
+`;
+
+const vars = parseEnv(full);
+assert.equal(vars['NG_MERCADOPAGO_PUBLIC_KEY'], 'TEST-abc', 'debe quitar comillas');
+assert.equal(vars['NG_API_BASE_URL'], '/api');
+
+const out = buildEnvironment('production', vars);
+assert.match(out, /production: true/);
+assert.match(out, /satisfies Environment/);
+assert.match(out, /no editar a mano/);
+
+const dev = buildEnvironment('development', vars);
+assert.match(dev, /production: false/);
+
+// falta clave requerida -> falla
+assert.throws(() => buildEnvironment('development', { NG_API_BASE_URL: '/api' }), /Faltan claves/);
+
+// clave con pinta de secreto -> aborta
+assert.throws(
+  () => buildEnvironment('development', { ...vars, MP_ACCESS_TOKEN: 'x' }),
+  /secreto/i,
+);
+
+console.log('✓ set-env self-check OK');

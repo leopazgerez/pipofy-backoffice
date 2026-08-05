@@ -1,0 +1,34 @@
+/* Pill de estado de sesión. Feature-local: vocabulario de Grupos.
+   Fuente: index-v2.html:402-405. */
+.ss-pill {
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  padding: 3px var(--space-sm);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+}
+
+.ss-pill.prog {
+  background: var(--color-primary-soft);
+  color: var(--color-on-primary-soft);
+}
+
+.ss-pill.done {
+  background: var(--color-accent-soft);
+  color: var(--color-on-accent-soft);
+}
+
+.ss-pill.canc {
+  background: var(--color-destructive-soft);
+  color: var(--color-on-destructive-soft);
+}
+
+.ses-court {
+  color: var(--color-fg-muted);
+}
+
+.ses-none {
+  color: var(--color-fg-subtle);
+}
+

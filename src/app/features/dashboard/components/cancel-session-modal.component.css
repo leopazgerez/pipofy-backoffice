@@ -1,0 +1,32 @@
+/* Pasos del flujo de cancelación. Feature-local a propósito: es vocabulario del
+   dashboard, no del design system. Fuente: index-v2.html:654-664.
+
+   `.failed` NO existe en la maqueta: sólo tenía .active y .done, sin vocabulario
+   visual para el fallo. Se agrega acá (spec §9.7). `.done` de la maqueta no aplica:
+   FlowState es 'idle' | 'running' | 'failed' (cancel-session-modal.component.ts) y
+   markDone() cierra el modal en vez de pintar un estado terminado, así que sólo
+   quedan .active y .failed acá.
+
+   @keyframes spin NO se redefine: vive en styles/components.css (global) y los
+   @keyframes no se encapsulan, así que se resuelve desde acá.
+
+   SIN el atenuado de los pasos inactivos de la maqueta (`opacity:.4`): acá no puede pintar.
+   El `.flow-step` sólo se renderiza con flow() en 'running' o 'failed', y las dos clases
+   están atadas a esos valores, así que TODO paso renderizado tiene siempre una de las dos.
+   OJO si agregás el paso 2: las clases son del componente entero, no por paso — los dos
+   pasos serían `.active` a la vez (dos spinners girando). El atenuado necesita un índice
+   de paso que FlowState hoy no tiene; no alcanza con revivir la regla. */
+.flow-step { display: flex; gap: var(--space-sm); padding: var(--space-sm) 0; }
+.flow-step + .flow-step { border-top: 1px solid var(--color-border); }
+.flow-step .fs-body { flex: 1; }
+.flow-step .fs-ic { width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--color-muted); border: 1px solid var(--color-border); display: grid; place-items: center; flex: 0 0 auto; font-family: var(--font-mono); font-weight: 700; font-size: var(--text-xs); color: var(--color-fg-subtle); transition: all var(--duration-page) var(--ease-inout); }
+.flow-step.active .fs-ic { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.flow-step.failed .fs-ic { background: var(--color-destructive); color: #fff; border-color: var(--color-destructive); }
+.flow-step.failed .fs-t { color: var(--color-on-destructive-soft); }
+.flow-step .fs-t { font-size: var(--text-sm); font-weight: 600; }
+.flow-step .fs-d { font-size: var(--text-2xs); color: var(--color-fg-muted); margin-top: 1px; }
+/* MASTER key effect: "data loading spinners". Sólo mientras el paso corre. */
+.flow-step .spin { width: 14px; height: 14px; border: 2px solid var(--color-border-strong); border-top-color: var(--color-primary); border-radius: 50%; animation: spin .7s linear infinite; display: none; align-self: center; }
+.flow-step.active .spin { display: block; }
+
+.cancel-intro-lead { font-size: var(--text-sm); color: var(--color-fg-muted); margin-bottom: var(--space-md); }

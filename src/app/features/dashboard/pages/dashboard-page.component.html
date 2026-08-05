@@ -1,0 +1,29 @@
+@if (facade.loading()) {
+  <p class="dash-status">Cargando panel…</p>
+} @else if (facade.error(); as err) {
+  <p class="dash-status" role="alert">No se pudo cargar el panel ({{ err.kind }}).</p>
+} @else if (facade.data(); as snap) {
+  <section id="view-dashboard">
+    <app-kpi-row [kpis]="snap.kpis" [activeHolds]="activeHolds()" />
+
+    <div class="ops">
+      <div>
+        <div class="section-head">
+          <h2>Grilla de canchas</h2>
+          <span class="pill-live"><span class="d" aria-hidden="true"></span>En vivo</span>
+        </div>
+        <app-court-grid [grid]="snap.grid" (sessionSelected)="openCancel($event)" />
+      </div>
+
+      <div class="rail">
+        <app-holds-card [holds]="holds()" />
+        <app-waitlist-card [entries]="snap.waitlist" />
+        <app-transfers-card [transfers]="snap.transfers" />
+      </div>
+    </div>
+  </section>
+
+  @if (cancelTarget(); as t) {
+    <app-cancel-session-modal [target]="t" (confirmed)="onCancelConfirmed($event)" />
+  }
+}

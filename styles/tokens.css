@@ -1,0 +1,169 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SETPOINT · TOKENS COMPARTIDOS
+   Fundamento del design system común a index-v2.html y onboarding.html.
+   Implementa design-system/pipofy-club-ops/MASTER.md.
+
+   Contiene: paleta y derivados (contraste AA verificado), espaciado,
+   sombras, radios, tipografía, reset, estilos base, utilidades de
+   accesibilidad, y el header/footer consistente entre páginas.
+
+   Cada página linkea este archivo y deja en su propio <style> sólo lo
+   específico (componentes del dashboard / del wizard) y, en index-v2,
+   los overrides de densidad tipográfica.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── Paleta de MASTER.md ── */
+  --color-primary:#2563EB; --color-on-primary:#FFFFFF; --color-secondary:#3B82F6;
+  --color-accent:#059669; --color-background:#F8FAFC; --color-foreground:#0F172A;
+  --color-muted:#F1F5FD; --color-border:#E4ECFC; --color-destructive:#DC2626; --color-ring:#2563EB;
+
+  /* ── Espaciado (Density 5/10 — Standard) ── */
+  --space-xs:.25rem; --space-sm:.5rem; --space-md:1rem; --space-lg:1.5rem;
+  --space-xl:2rem; --space-2xl:3rem; --space-3xl:4rem;
+
+  /* ── Sombras ── */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px rgba(0,0,0,.1);
+  --shadow-lg:0 10px 15px rgba(0,0,0,.1);
+  --shadow-xl:0 20px 25px rgba(0,0,0,.15);
+
+  /* ── Tipografía ── */
+  --font-heading:"Fira Code",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --font-body:"Fira Sans","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  --font-mono:var(--font-heading);
+
+  /* ── Radios (Component Specs de MASTER) ── */
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-full:999px;
+
+  /* ── Scrim y capas (antes sólo vivían en el :root local de index-v2.html) ── */
+  /* Scrim de overlays: ::backdrop de dialog + backdrop del nav móvil. Fuente: index-v2.html:37 */
+  --color-scrim:rgba(0,0,0,0.5);
+  /* Capa de toasts: por encima de TODO (--z-header:30, --z-drawer:50). Fuente: index-v2.html:45 */
+  --z-toast:200;
+
+  --color-border-strong:#E2E8F0;  /* borde del spec .input de MASTER */
+
+  /* ── Movimiento ── */
+  --duration:200ms; --ease:ease;
+  --duration-page:400ms; --ease-inout:cubic-bezier(.45,0,.55,1); /* ≈ power2.inOut */
+
+  /* ── Derivados — MASTER no los define; contraste verificado ── */
+  --color-surface:#FFFFFF; --color-surface-2:var(--color-muted);
+  --color-fg:var(--color-foreground);   /* 17.9:1 */
+  --color-fg-muted:#475569;             /*  7.6:1 */
+  --color-fg-subtle:#586675;            /*  5.9:1 sobre blanco, 5.4:1 sobre muted */
+
+  --color-primary-hover:#1D4ED8;        /* blanco: 6.30:1 */
+  --color-primary-strong:#1E3A8A;       /* blanco: 10.4:1 */
+  --color-primary-soft:#EFF4FE; --color-on-primary-soft:#1D4ED8;   /* 6.08:1 sobre soft */
+
+  /* accent #059669 = 3.77:1 con blanco: no llega a AA. Sólido = #047857. */
+  --color-accent-strong:#047857;        /* blanco: 5.48:1 */
+  --color-accent-hover:#036B4B;         /* blanco: 6.55:1 */
+  --color-accent-mark:var(--color-accent);   /* sólo marcas/barras */
+  --color-accent-soft:#E7F6EF; --color-on-accent-soft:#046C4E;    /* 5.77:1 sobre soft */
+  --color-accent-soft-border:#BEE6D4;   /* el borde del par soft (.sess.open) */
+
+  --color-destructive-hover:#B91C1C;
+  --color-destructive-soft:#FEECEC; --color-on-destructive-soft:#B91C1C; /* 5.68:1 */
+
+  --color-warning:#B45309; --color-warning-mark:#F59E0B;
+  --color-warning-soft:#FEF3C7; --color-on-warning-soft:#78350F;   /* 8.15:1 */
+  --color-warning-soft-border:#F4DCA0;  /* el borde del par soft (.sess.wait, .notice.hold) */
+
+  /* ── Escala tipográfica canónica (base 16px, cómoda).
+        index-v2.html la sobreescribe a densidad de dashboard. ── */
+  --text-2xs:.6875rem; --text-xs:.75rem; --text-sm:.8125rem; --text-base:1rem;
+  --text-md:1.0625rem; --text-lg:1.25rem; --text-xl:1.5rem; --text-2xl:1.875rem;
+  --text-3xl:2rem; --text-4xl:2.75rem;
+  --leading-tight:1.2; --leading-snug:1.35; --leading-normal:1.5;
+  --tracking-wide:.06em; --tracking-wider:.14em;
+}
+
+/* ═══════════════ RESET + BASE ═══════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font-body);
+  background:var(--color-background);
+  color:var(--color-fg);
+  font-size:var(--text-base);
+  line-height:var(--leading-normal);
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh;
+}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* MASTER: "Invisible focus states ❌". El anillo va siempre visible. */
+:focus-visible{outline:2.5px solid var(--color-ring);outline-offset:2px;border-radius:var(--radius-sm)}
+::selection{background:var(--color-primary);color:var(--color-on-primary)}
+
+h1,h2,h3,h4{font-family:var(--font-heading);font-weight:600;line-height:var(--leading-tight);text-wrap:balance}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* MASTER: "prefers-reduced-motion respetado" */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important;
+  }
+}
+
+/* ═══════════════ MARCA (lockup compartido) ═══════════════ */
+.brandmark{display:inline-flex;align-items:center;gap:var(--space-sm);text-decoration:none;color:inherit}
+.brandmark .bm-logo{
+  width:34px;height:34px;border-radius:var(--radius-sm);flex:0 0 auto;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--color-accent),var(--color-primary));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+}
+.brandmark .bm-logo svg{width:20px;height:20px}
+.brandmark .bm-name{font-family:var(--font-heading);font-size:var(--text-md);font-weight:600;letter-spacing:-.02em;line-height:1.1;color:var(--color-fg)}
+.brandmark .bm-sub{font-size:var(--text-2xs);color:var(--color-fg-subtle);letter-spacing:var(--tracking-wider);text-transform:uppercase;font-weight:600;display:block}
+
+/* Enlace "volver" reutilizable en headers */
+.backlink{
+  display:inline-flex;align-items:center;gap:var(--space-xs);
+  font-size:var(--text-sm);font-weight:600;color:var(--color-primary);text-decoration:none;
+  padding:8px 12px;min-height:44px;border-radius:var(--radius-sm);
+  transition:background var(--duration) var(--ease),color var(--duration) var(--ease);
+}
+.backlink:hover{background:var(--color-primary-soft)}
+.backlink svg{width:16px;height:16px}
+
+/* ═══════════════ FOOTER CONSISTENTE ═══════════════ */
+.site-footer{
+  width:100%;border-top:1px solid var(--color-border);background:var(--color-surface-2);
+  padding:var(--space-lg) var(--space-md);
+}
+.sf-inner{
+  max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-lg);
+}
+.sf-top{display:flex;flex-direction:column;gap:var(--space-lg);justify-content:space-between}
+.sf-blurb{font-size:var(--text-sm);color:var(--color-fg-muted);margin-top:var(--space-sm);max-width:44ch}
+.sf-ctas{display:flex;flex-direction:column;gap:var(--space-sm)}
+.sf-ctas .sf-ct-lbl{font-size:var(--text-2xs);font-weight:700;letter-spacing:var(--tracking-wide);text-transform:uppercase;color:var(--color-fg-subtle);margin-bottom:var(--space-xs)}
+.sf-cta{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);
+  font-size:var(--text-sm);font-weight:600;text-decoration:none;white-space:nowrap;
+  padding:10px 18px;min-height:44px;border-radius:var(--radius-sm);
+  transition:background var(--duration) var(--ease),color var(--duration) var(--ease),border-color var(--duration) var(--ease),transform var(--duration) var(--ease);
+}
+.sf-cta svg{width:16px;height:16px;flex:0 0 auto}
+.sf-cta:hover{transform:translateY(-1px)}
+.sf-cta.primary{background:var(--color-primary);color:var(--color-on-primary)}
+.sf-cta.primary:hover{background:var(--color-primary-hover)}
+.sf-cta.ghost{background:var(--color-surface);color:var(--color-primary);border:1px solid var(--color-border-strong)}
+.sf-cta.ghost:hover{border-color:var(--color-primary);background:var(--color-primary-soft)}
+.sf-legal{border-top:1px solid var(--color-border);padding-top:var(--space-md);font-size:var(--text-xs);color:var(--color-fg-subtle);display:flex;flex-wrap:wrap;gap:var(--space-sm) var(--space-md);align-items:center;justify-content:space-between}
+.sf-legal a{color:var(--color-primary);font-weight:600;text-decoration:none}
+.sf-legal a:hover{text-decoration:underline}
+.sf-legal nav{display:flex;flex-wrap:wrap;gap:var(--space-md)}
+
+@media(min-width:768px){
+  .sf-top{flex-direction:row;align-items:flex-start}
+  .sf-ctas{align-items:flex-end}
+  .sf-ctas .sf-row{display:flex;gap:var(--space-sm)}
+}

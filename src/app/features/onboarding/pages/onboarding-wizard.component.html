@@ -1,0 +1,70 @@
+<main class="page">
+  <header class="masthead">
+    <app-brandmark link="/" />
+    <a class="backlink" routerLink="/">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      Volver al panel
+    </a>
+  </header>
+
+  <p class="sr-only" aria-live="polite">{{ live() }}</p>
+
+  <form class="card" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="stepper-wrap">
+      <app-stepper [activeNode]="activeNode()" [labels]="labels" />
+    </div>
+
+    @if (roleSig() && stepKey() !== 'role') {
+      <div class="role-banner">
+        <span class="rb-txt">Te registrás como <b>{{ roleLabel() }}</b></span>
+        <button type="button" class="rb-change" (click)="changeRole()">Cambiar</button>
+      </div>
+    }
+
+    <div class="body">
+      @switch (stepKey()) {
+        @case ('role')    { <app-role-step [control]="roleControl" /> }
+        @case ('account') { <app-account-step [group]="accountGroup" [role]="roleSig()" /> }
+        @case ('confirm') { <app-confirm-step [form]="form" (editStep)="goTo($event)" /> }
+      }
+    </div>
+
+    <div class="foot">
+      @if (stepIndex() > 0) {
+        <button type="button" class="btn btn-ghost" (click)="back()">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          Volver
+        </button>
+      }
+      <span class="spacer"></span>
+      @if (stepKey() !== 'confirm') {
+        <button type="button" class="btn btn-primary" (click)="next()">
+          Continuar
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+      } @else {
+        <button type="submit" class="btn btn-cta" [class.loading]="facade.loading()" [disabled]="facade.loading()">
+          @if (facade.loading()) {
+            <span class="spin" aria-hidden="true"></span><span class="btn-label">Creando cuenta…</span>
+          } @else {
+            <span class="btn-label">Crear cuenta</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (facade.error(); as err) {
+      <p class="foot-error" role="alert">{{ domainErrorMessage(err) }}</p>
+    }
+  </form>
+
+  <p class="legal">¿Ya tenés cuenta? <a routerLink="/login">Iniciá sesión</a></p>
+</main>
+
+<app-site-footer>
+  <span class="sf-ct-lbl">¿Ya sos parte?</span>
+  <a class="sf-cta ghost" routerLink="/login">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    Volver al panel
+  </a>
+</app-site-footer>

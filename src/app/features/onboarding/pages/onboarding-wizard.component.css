@@ -1,0 +1,62 @@
+/* Tokens, reset, base y footer compartidos: styles/tokens.css.
+   Debajo, sólo lo específico del wizard de onboarding. Portado verbatim
+   de onboarding.html por rango de líneas (ver plan Task 10, Step 3). */
+
+/* ═══════════════ LAYOUT (líneas 28-52) ═══════════════ */
+.page{min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:var(--space-md) var(--space-md) 0}
+.masthead{width:100%;max-width:640px;display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm);padding:var(--space-md) 0 var(--space-lg)}
+
+/* Banner de rol: aparece una vez elegido el rol (incluido al venir por ?rol=) */
+.role-banner{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm);
+  padding:10px var(--space-lg);background:var(--color-primary-soft);
+  border-bottom:1px solid var(--color-border);
+}
+.role-banner .rb-txt{font-size:var(--text-sm);color:var(--color-on-primary-soft)}
+.role-banner .rb-txt b{font-weight:700}
+.rb-change{
+  font-size:var(--text-sm);font-weight:600;color:var(--color-primary);
+  padding:8px 12px;min-height:40px;border-radius:var(--radius-sm);
+  transition:background var(--duration) var(--ease);
+}
+.rb-change:hover{background:var(--color-surface)}
+.rb-change:active{transform:scale(.98)}
+
+.card{
+  width:100%;max-width:640px;background:var(--color-surface);
+  border:1px solid var(--color-border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);overflow:hidden;
+}
+
+/* ═══════════════ STEPPER (línea 55) ═══════════════ */
+.stepper-wrap{padding:var(--space-lg) var(--space-lg) var(--space-md);border-bottom:1px solid var(--color-border);background:var(--color-surface-2)}
+
+/* ═══════════════ PASOS (líneas 73-80) ═══════════════ */
+.body{padding:var(--space-lg)}
+.step{animation:stepIn var(--duration-page) var(--ease-inout)}
+@keyframes stepIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion: reduce){ .step{animation:none} }
+.step-head{margin-bottom:var(--space-lg)}
+.step-head .eyebrow{font-size:var(--text-2xs);font-weight:700;letter-spacing:var(--tracking-wide);text-transform:uppercase;color:var(--color-on-primary-soft);margin-bottom:var(--space-xs)}
+.step-head h2{font-size:var(--text-xl)}
+.step-head p{font-size:var(--text-sm);color:var(--color-fg-muted);margin-top:var(--space-xs)}
+
+/* ═══════════════ PIE DE NAVEGACIÓN (líneas 203-224) ═══════════════ */
+.foot{display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-md) var(--space-lg);border-top:1px solid var(--color-border);background:var(--color-surface-2);flex-wrap:wrap}
+.foot .spacer{flex:1}
+/* .btn* y @keyframes spin subieron a styles/components.css (primitivos globales del DS). */
+
+.foot-error{padding:var(--space-sm) var(--space-lg);color:var(--color-on-destructive-soft);font-size:var(--text-sm);font-weight:600}
+
+/* ═══════════════ LEGAL (líneas 235-236) ═══════════════ */
+.legal{width:100%;max-width:640px;text-align:center;font-size:var(--text-xs);color:var(--color-fg-subtle);margin-top:var(--space-lg)}
+.legal a{color:var(--color-primary);font-weight:600}
+
+/* ═══════════════ BREAKPOINTS (líneas 245-251, sólo .page/.body/.stepper-wrap/.foot/.step-head h2) ═══════════════ */
+@media(min-width:768px){
+  .page{padding:var(--space-xl) var(--space-lg) var(--space-3xl)}
+  .body{padding:var(--space-xl)}
+  .stepper-wrap{padding:var(--space-lg) var(--space-xl) var(--space-md)}
+  .foot{padding:var(--space-md) var(--space-xl)}
+  .step-head h2{font-size:var(--text-2xl)}
+}

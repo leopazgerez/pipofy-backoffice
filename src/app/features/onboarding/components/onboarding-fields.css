@@ -1,0 +1,26 @@
+/* Los primitivos .field/.control/.hint/.err-msg/.req/.optional viven en
+   styles/components.css (global). Acá queda sólo lo específico del wizard: el
+   medidor de contraseña, los checkboxes de disciplinas, y los entrelazados de
+   .pw-toggle con el primitivo .field. */
+
+/* ── Entrelazado con .field: el toggle de contraseña ocupa el margen derecho ── */
+.field:has(.pw-toggle) input{padding-right:48px}
+.field.ok:has(.pw-toggle) .ok-ic{right:44px}
+.pw-toggle{position:absolute;right:6px;width:36px;height:36px;border-radius:var(--radius-sm);display:grid;place-items:center;color:var(--color-fg-subtle);transition:background var(--duration) var(--ease),color var(--duration) var(--ease)}
+.pw-toggle:hover{background:var(--color-muted);color:var(--color-fg)}
+.pw-toggle svg{width:18px;height:18px}
+
+/* ── Medidor de fuerza de contraseña ── */
+.pw-meter{margin-top:var(--space-sm)}
+.pw-bars{display:flex;gap:var(--space-xs)}
+.pw-bars span{flex:1;height:5px;border-radius:var(--radius-full);background:var(--color-border-strong);transition:background var(--duration) var(--ease)}
+.pw-meta{display:flex;justify-content:space-between;gap:var(--space-sm);margin-top:var(--space-xs);font-size:var(--text-xs)}
+.pw-label{font-weight:700}
+.pw-tip{color:var(--color-fg-subtle)}
+.pw-s1 .pw-bars span:nth-child(-n+1){background:var(--color-destructive)}
+.pw-s2 .pw-bars span:nth-child(-n+2){background:var(--color-warning-mark)}
+.pw-s3 .pw-bars span:nth-child(-n+3){background:var(--color-accent-mark)}
+.pw-s4 .pw-bars span{background:var(--color-accent-strong)}
+.pw-s1 .pw-label{color:var(--color-on-destructive-soft)}
+.pw-s2 .pw-label{color:var(--color-on-warning-soft)}
+.pw-s3 .pw-label,.pw-s4 .pw-label{color:var(--color-on-accent-soft)}

@@ -1,0 +1,23 @@
+/* Sólo estilos de elementos que viven en ESTE template. Los KPIs, la grilla y las
+   cards se estilan dentro de sus propios componentes (la encapsulación de vista de
+   Angular no deja que este CSS llegue a los hijos). */
+.dash-status { padding: var(--space-lg); color: var(--color-fg-muted); font-size: var(--text-sm); }
+
+/* ═══════════════ OPS (grilla + rail) ═══════════════ */
+.ops { display: grid; grid-template-columns: 1fr; gap: var(--space-md); align-items: start; }
+.section-head { display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md); flex-wrap: wrap; }
+.section-head h2 { font-size: var(--text-md); }
+.pill-live { display: inline-flex; align-items: center; gap: var(--space-sm); background: var(--color-primary-strong); color: #fff; font-size: var(--text-2xs); font-weight: 600; padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-full); }
+.pill-live .d { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 2s infinite; }
+
+/* ═══════════════ RAIL DE ALERTAS ═══════════════ */
+.rail { display: flex; flex-direction: column; gap: var(--space-md); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+@media (prefers-reduced-motion: reduce) { .pill-live .d { animation: none; } }
+
+/* Responsive (mismos breakpoints que el mockup) */
+@media (min-width: 1280px) {
+  .ops { grid-template-columns: 1fr 328px; gap: var(--space-lg); }
+  .rail { position: sticky; top: var(--space-lg); }
+}

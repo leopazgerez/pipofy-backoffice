@@ -1,0 +1,72 @@
+<section class="panel">
+  <div class="panel-head">
+    <h3>Planes</h3>
+    <div class="search-box">
+      <label class="sr-only" for="planes-q">Buscar plan por nombre</label>
+      <input id="planes-q" type="search" placeholder="Buscar plan…" (input)="onSearch($event)" />
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openNew()">+ Nuevo plan</button>
+  </div>
+
+  <!-- BANNER, no una rama del chain: un error de guardado no puede reemplazar la tabla. -->
+  @if (errorText()) {
+    <p class="notice hold" role="alert">{{ errorText() }}</p>
+  }
+
+  @if (facade.loading()) {
+    <p class="a-body">Cargando planes…</p>
+  } @else if (filtered().length) {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Profesor</th>
+            <th scope="col">Clases</th>
+            <th scope="col">Precio</th>
+            <th scope="col">Validez</th>
+            <th scope="col">Activo</th>
+            <th scope="col" class="cell-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (plan of filtered(); track plan.id) {
+            <tr>
+              <td>{{ plan.name || '(sin nombre)' }}</td>
+              <td>{{ planTypeName(plan.planTypeId) }}</td>
+              <td>{{ coachName(plan.coachId) }}</td>
+              <td>{{ plan.classCount ?? '—' }}</td>
+              <td>{{ price(plan.price) }}</td>
+              <td>{{ plan.validityDays !== null ? plan.validityDays + ' días' : '—' }}</td>
+              <td>{{ plan.active ? 'Sí' : 'No' }}</td>
+              <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openEdit(plan)">Editar</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="askDelete(plan)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (facade.data()) {
+    <!-- El vacío sólo cuando la lista LLEGÓ vacía: si data() es null la carga falló. -->
+    <div class="a-empty">
+      @if (query()) {
+        Ningún plan coincide con la búsqueda.
+      } @else {
+        Todavía no cargaste ningún plan.
+      }
+    </div>
+  }
+</section>
+
+<app-plan-form-modal
+  [planTypes]="planTypes()"
+  [coaches]="facade.coaches()"
+  [error]="errorText()"
+  (saved)="onSaved($event)" />
+
+<app-confirm-delete-modal
+  [itemName]="deleting()?.name || 'este plan'"
+  (confirmed)="onDeleteConfirmed()" />

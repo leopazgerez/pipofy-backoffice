@@ -1,0 +1,71 @@
+<section class="panel">
+  <div class="panel-head">
+    <h3>Canchas</h3>
+    <div class="search-box">
+      <label class="sr-only" for="canchas-q">Buscar cancha por nombre o código</label>
+      <input id="canchas-q" type="search" placeholder="Buscar cancha…" (input)="onSearch($event)" />
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openNew()">+ Nueva cancha</button>
+  </div>
+
+  <!-- BANNER, no una rama del chain: la facade también ESCRIBE, y un error de guardado no puede
+       reemplazar la tabla que data() sigue teniendo intacta. Mismo role="alert" que
+       grupos-list-page.component.html:4. -->
+  @if (errorText()) {
+    <p class="notice hold" role="alert">{{ errorText() }}</p>
+  }
+
+  @if (facade.loading()) {
+    <p class="a-body">Cargando canchas…</p>
+  } @else if (filtered().length) {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Código</th>
+            <th scope="col">Superficie</th>
+            <th scope="col">Techada</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="cell-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (court of filtered(); track court.id) {
+            <tr>
+              <td>{{ court.name || '(sin nombre)' }}</td>
+              <td>{{ court.code || '—' }}</td>
+              <td>{{ surfaceName(court.surfaceTypeId) }}</td>
+              <td>{{ court.indoor ? 'Sí' : 'No' }}</td>
+              <td>{{ statusName(court.courtStatusId) }}</td>
+              <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openEdit(court)">Editar</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="askDelete(court)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (facade.data()) {
+    <!-- El vacío sólo cuando la lista LLEGÓ vacía: si data() es null la carga falló y lo que
+         corresponde es el banner de arriba, no "todavía no cargaste ninguna cancha". -->
+    <div class="a-empty">
+      @if (query()) {
+        Ninguna cancha coincide con la búsqueda.
+      } @else {
+        Todavía no cargaste ninguna cancha.
+      }
+    </div>
+  }
+</section>
+
+<app-cancha-form-modal
+  [surfaceTypes]="surfaceTypes()"
+  [courtStatuses]="courtStatuses()"
+  [error]="errorText()"
+  (saved)="onSaved($event)" />
+
+<app-confirm-delete-modal
+  [itemName]="deleting()?.name || 'esta cancha'"
+  (confirmed)="onDeleteConfirmed()" />

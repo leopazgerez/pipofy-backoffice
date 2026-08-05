@@ -1,0 +1,38 @@
+/* Grilla de canchas — estilos del propio app-court-grid (encapsulados). */
+.grid-wrap { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden; }
+.grid-scroll { overflow-x: auto; }
+.court-grid { display: grid; grid-template-columns: 56px repeat(4, minmax(150px, 1fr)); min-width: 680px; }
+.court-grid .ch { position: sticky; top: 0; background: var(--color-muted); border-bottom: 1px solid var(--color-border-strong); padding: var(--space-sm); z-index: 1; }
+.court-grid .ch.corner { border-right: 1px solid var(--color-border); }
+.court-grid .ch .cn { font-family: var(--font-heading); font-weight: 600; font-size: var(--text-sm); color: var(--color-fg); display: flex; align-items: center; gap: var(--space-sm); }
+.court-grid .ch .cn .surf { width: 9px; height: 9px; border-radius: 3px; flex: 0 0 auto; }
+.surf.padel { background: var(--color-primary); }
+.surf.tenis { background: var(--color-warning-mark); }
+.court-grid .ch .cmeta { font-size: var(--text-2xs); color: var(--color-fg-subtle); margin-top: 2px; }
+.hourcell { border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: var(--space-sm) var(--space-xs); font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--color-fg-subtle); text-align: right; font-weight: 700; background: var(--color-muted); font-variant-numeric: tabular-nums; }
+.slot { border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: var(--space-xs); min-height: 78px; position: relative; }
+.slot:last-child { border-right: none; }
+.slot.empty { display: grid; place-items: center; }
+
+/* Sesión: la única card clicable de la grilla (abre el modal de cancelar). Lleva el
+   hover de MASTER. Fuente: index-v2.html:203-210. El anillo de foco lo pone el
+   :focus-visible global de tokens.css:91 — no hace falta repetirlo acá. */
+.sess { display: block; width: 100%; text-align: left; border-radius: var(--radius-md); padding: var(--space-sm); height: 100%; border: 1px solid transparent; cursor: pointer; transition: box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease); }
+.sess:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.sess:active { transform: translateY(0); }
+.sess.full { background: var(--color-muted); border-color: var(--color-border-strong); }
+.sess.open { background: var(--color-accent-soft); border-color: var(--color-accent-soft-border); }
+.sess.wait { background: var(--color-warning-soft); border-color: var(--color-warning-soft-border); }
+.sess .s-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-xs); }
+.sess .s-cat { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-sm); color: var(--color-fg); }
+.sess .s-occ { font-family: var(--font-mono); font-size: var(--text-2xs); font-weight: 700; padding: 2px 6px; border-radius: var(--radius-sm); background: var(--color-surface); border: 1px solid var(--color-border-strong); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.sess.full .s-occ { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
+.sess.open .s-occ { background: var(--color-accent-strong); color: #fff; border-color: var(--color-accent-strong); }
+.sess .s-prof { font-size: var(--text-2xs); color: var(--color-fg-muted); display: flex; align-items: center; gap: var(--space-xs); }
+.sess .s-prof .pdot { width: 16px; height: 16px; border-radius: 5px; background: var(--color-primary); color: #fff; font-size: 9px; font-weight: 700; display: grid; place-items: center; flex: 0 0 auto; }
+.sess .s-flag { display: inline-flex; align-items: center; margin-top: var(--space-xs); font-size: var(--text-2xs); font-weight: 700; padding: 2px 6px; border-radius: 5px; }
+.s-flag.wa { background: var(--color-accent-strong); color: #fff; }
+.s-flag.wait { background: var(--color-warning); color: #fff; }
+.sess .occ-bar { height: 3px; border-radius: 2px; background: rgba(15, 23, 42, .1); margin-top: var(--space-sm); overflow: hidden; }
+.sess .occ-bar i { display: block; height: 100%; background: var(--color-secondary); border-radius: 2px; }
+.sess.open .occ-bar i { background: var(--color-accent-mark); }

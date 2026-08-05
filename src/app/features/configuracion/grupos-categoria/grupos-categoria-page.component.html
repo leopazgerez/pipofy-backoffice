@@ -1,0 +1,58 @@
+<section class="panel">
+  <div class="panel-head">
+    <h3>Grupos de categoría</h3>
+    <div class="search-box">
+      <label class="sr-only" for="grupos-q">Buscar grupo por nombre</label>
+      <input id="grupos-q" type="search" placeholder="Buscar grupo…" (input)="onSearch($event)" />
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openNew()">+ Nuevo grupo</button>
+  </div>
+
+  <!-- BANNER, no una rama del chain: la facade también ESCRIBE, y un error de guardado no puede
+       reemplazar la tabla que data() sigue teniendo intacta. -->
+  @if (errorText()) {
+    <p class="notice hold" role="alert">{{ errorText() }}</p>
+  }
+
+  @if (facade.loading()) {
+    <p class="a-body">Cargando grupos…</p>
+  } @else if (filtered().length) {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col" class="cell-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of filtered(); track group.id) {
+            <tr>
+              <td>{{ group.name || '(sin nombre)' }}</td>
+              <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openEdit(group)">Editar</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="askDelete(group)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (facade.data()) {
+    <!-- El vacío sólo cuando la lista LLEGÓ vacía: si data() es null la carga falló y lo que
+         corresponde es el banner de arriba, no "todavía no cargaste ningún grupo". -->
+    <div class="a-empty">
+      @if (query()) {
+        Ningún grupo coincide con la búsqueda.
+      } @else {
+        Todavía no cargaste ningún grupo de categoría.
+      }
+    </div>
+  }
+</section>
+
+<app-grupo-categoria-form-modal [error]="errorText()" (saved)="onSaved($event)" />
+
+<app-confirm-delete-modal
+  [itemName]="deleting()?.name || 'este grupo'"
+  (confirmed)="onDeleteConfirmed()" />

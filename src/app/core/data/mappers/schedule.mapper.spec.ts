@@ -1,0 +1,91 @@
+import { describe, it, expect } from 'vitest';
+import { ScheduleDto } from '../dto/schedules.dto';
+import { toSchedule, toScheduleRequest } from './schedule.mapper';
+import { ScheduleDraft } from '@domain/entities/schedule';
+
+const DTO: ScheduleDto = {
+  id: '1', courtId: '10', coachId: '20', categoryGroupId: '30', sessionTypeId: '40',
+  weekday: 1,
+  startTime: '1970-01-01T18:00:00.000Z',
+  endTime: '1970-01-01T19:30:00.000Z',
+  capacity: 8, price: '12000', active: true,
+  validFrom: '2026-08-01T00:00:00.000Z',
+  validTo: '2026-12-31T00:00:00.000Z',
+  deletedAt: null,
+};
+
+describe('toSchedule', () => {
+  it('recorta las horas del DateTime completo (§3.2)', () => {
+    const s = toSchedule(DTO);
+    expect(s.startTime).toBe('18:00');
+    expect(s.endTime).toBe('19:30');
+  });
+
+  it('NO convierte a la zona local: la hora ya viene en UTC por construcción', () => {
+    // El service arma la hora con new Date('1970-01-01T18:00:00Z'). Pasarla por
+    // toLocaleTimeString la correría tres horas en Argentina.
+    expect(toSchedule({ ...DTO, startTime: '1970-01-01T00:30:00.000Z' }).startTime).toBe('00:30');
+  });
+
+  it('recorta las fechas de vigencia al formato de <input type="date">', () => {
+    const s = toSchedule(DTO);
+    expect(s.validFrom).toBe('2026-08-01');
+    expect(s.validTo).toBe('2026-12-31');
+  });
+
+  it('las horas null quedan null: son DateTime? y generateSessions saltea esas filas', () => {
+    const s = toSchedule({ ...DTO, startTime: null, endTime: null, weekday: null });
+    expect(s.startTime).toBeNull();
+    expect(s.endTime).toBeNull();
+    expect(s.weekday).toBeNull();
+  });
+
+  it('un formato inesperado degrada a null en vez de tirar', () => {
+    // Modo de falla elegido (§3.2): §3.2 es una INFERENCIA sobre cómo Prisma serializa
+    // @db.Time. Si estuviera mal, la fila muestra — y la lista sigue viva.
+    expect(toSchedule({ ...DTO, startTime: 'mediodía' }).startTime).toBeNull();
+    expect(toSchedule({ ...DTO, validFrom: 'ayer' }).validFrom).toBeNull();
+  });
+
+  it('price se normaliza a string aunque llegue como número', () => {
+    expect(toSchedule({ ...DTO, price: 12000 }).price).toBe('12000');
+    expect(toSchedule({ ...DTO, price: null }).price).toBeNull();
+  });
+});
+
+describe('toScheduleRequest', () => {
+  const DRAFT: ScheduleDraft = {
+    courtId: '10', coachId: '20', categoryGroupId: '30', sessionTypeId: '40',
+    weekday: 1, startTime: '18:00', endTime: '19:30',
+    capacity: 8, price: '12000', active: true,
+    validFrom: '2026-08-01', validTo: '2026-12-31',
+  };
+
+  it('manda los doce campos cuando están todos', () => {
+    expect(toScheduleRequest(DRAFT)).toEqual(DRAFT);
+  });
+
+  it('OMITE validFrom y validTo cuando son null (§3.7)', () => {
+    // El service hace `dto.validFrom ? new Date(...) : undefined`, o sea que mandar null
+    // NO las vacía: las deja como estaban. Omitir la clave es lo mismo y más barato.
+    const req = toScheduleRequest({ ...DRAFT, validFrom: null, validTo: null });
+    expect('validFrom' in req).toBe(false);
+    expect('validTo' in req).toBe(false);
+  });
+
+  it('MANDA capacity y price EN null: sus columnas sí se vacían', () => {
+    // Contraste deliberado con las dos de arriba, DENTRO DEL MISMO MAPPER. Los dos tests
+    // existen para que un refactor que "unifique" las reglas rompa en rojo.
+    const req = toScheduleRequest({ ...DRAFT, capacity: null, price: null });
+    expect('capacity' in req).toBe(true);
+    expect(req.capacity).toBeNull();
+    expect('price' in req).toBe(true);
+    expect(req.price).toBeNull();
+  });
+
+  it('weekday viaja como number y price como string', () => {
+    const req = toScheduleRequest(DRAFT);
+    expect(typeof req.weekday).toBe('number');
+    expect(typeof req.price).toBe('string');
+  });
+});

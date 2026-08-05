@@ -1,0 +1,86 @@
+<section class="panel">
+  <div class="panel-head">
+    <h3>Datos del club</h3>
+  </div>
+
+  <!-- BANNER, no una rama del chain (regla 1 de §8.0): un error de guardado no puede
+       reemplazar el formulario con lo que la persona acaba de escribir. -->
+  @if (errorText()) {
+    <p class="notice hold" role="alert">{{ errorText() }}</p>
+  }
+
+  <!-- data() PRIMERO, no loading() (regla 2 de §8.0 + fix de code review): loading es
+       compartido entre lectura y escritura, y acá no hay <dialog> que tape el formulario
+       mientras se guarda. Con loading() primero, cada click en Guardar hacía desaparecer
+       los 6 <input> del DOM y los reemplazaba por "Cargando…" — texto de lectura durante
+       una escritura, y el foco se perdía si estaba en un campo. Preguntando por data()
+       primero, un guardado (data() ya no-null) deja el formulario en pantalla; la única
+       protección que corresponde ahí es el [disabled] del botón. -->
+  @if (facade.data()) {
+    <!-- `.field` a secas y NO `.field-dense`: components.css:108-111 dice textual que
+         field-dense es para adentro de un <app-modal>, y esto es un formulario de página. -->
+    <div class="club-form">
+      <div class="field">
+        <label for="club-nombre">Nombre</label>
+        <input id="club-nombre" class="control" type="text"
+               [value]="name()" (input)="name.set(value($event))" />
+      </div>
+
+      <div class="field">
+        <label for="club-telefono">Teléfono</label>
+        <input id="club-telefono" class="control" type="text"
+               [value]="phone()" (input)="phone.set(value($event))" />
+      </div>
+
+      <div class="field">
+        <label for="club-direccion">Dirección</label>
+        <input id="club-direccion" class="control" type="text"
+               [value]="address()" (input)="address.set(value($event))" />
+      </div>
+
+      <div class="field">
+        <label for="club-alias">Alias de transferencia</label>
+        <input id="club-alias" class="control" type="text"
+               [value]="transferAlias()" (input)="transferAlias.set(value($event))" />
+        <p class="hint">Es el alias que se le muestra a la gente para pagar.</p>
+      </div>
+
+      <div class="field">
+        <label for="club-minutos">Minutos de reserva</label>
+        <input id="club-minutos" class="control" type="number" min="1" step="1"
+               [value]="holdMinutes()" (input)="holdMinutes.set(value($event))" />
+        <p class="hint">Cuánto tiempo se le guarda el lugar a alguien antes de liberarlo.</p>
+      </div>
+
+      <!-- FUERA de .field a propósito: `.field input` es un selector de descendencia y
+           convertiría el checkbox en una caja de texto. El primitivo .checkbox-row de
+           styles/components.css:134 resuelve la geometría. -->
+      <label class="checkbox-row" for="club-niveles">
+        <input id="club-niveles" type="checkbox"
+               [checked]="usesLeveling()" (change)="usesLeveling.set(checked($event))" />
+        El club usa niveles
+      </label>
+
+      <div class="club-foot">
+        <!-- disabled por DOS motivos distintos: sin cambios no hay nada que mandar, y
+             mientras la escritura está en vuelo un segundo click manda un segundo PATCH
+             (regla 5 de §8.0). -->
+        <button type="button" class="btn btn-primary" data-test="save"
+                [disabled]="!dirty() || facade.loading()" (click)="onSave()">
+          Guardar cambios
+        </button>
+      </div>
+    </div>
+  } @else if (facade.loading()) {
+    <p class="a-body">Cargando los datos del club…</p>
+  } @else {
+    <!-- data() en null y sin cargar = la carga FALLÓ. No se ofrece un formulario vacío:
+         guardarlo mandaría los cuatro nullables en null y acá el null vacía (§8.1). -->
+    <div class="a-empty">
+      No pudimos traer los datos del club.
+      <button type="button" class="btn btn-ghost btn-sm" data-test="retry" (click)="retry()">
+        Reintentar
+      </button>
+    </div>
+  }
+</section>

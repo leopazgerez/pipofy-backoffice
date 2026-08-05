@@ -1,0 +1,75 @@
+<section class="panel">
+  <div class="panel-head">
+    <h3>Horarios</h3>
+    <button type="button" class="btn btn-ghost" data-test="generar"
+            [disabled]="generables() === 0" (click)="openGenerar()">Generar clases</button>
+    <button type="button" class="btn btn-primary" (click)="openNew()">+ Nuevo horario</button>
+  </div>
+
+  <!-- BANNER, no una rama del chain: un error de guardado no puede reemplazar la tabla. -->
+  @if (errorText()) {
+    <p class="notice hold" role="alert">{{ errorText() }}</p>
+  }
+
+  @if (facade.loading()) {
+    <p class="a-body">Cargando horarios…</p>
+  } @else if (facade.sorted().length) {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Día</th>
+            <th scope="col">Horario</th>
+            <th scope="col">Cancha</th>
+            <th scope="col">Grupo</th>
+            <th scope="col">Profesor</th>
+            <th scope="col">Cupo</th>
+            <th scope="col">Activo</th>
+            <th scope="col" class="cell-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (schedule of facade.sorted(); track schedule.id) {
+            <tr>
+              <td>{{ dia(schedule.weekday) }}</td>
+              <td class="mono">{{ rango(schedule) }}</td>
+              <td>{{ courtName(schedule.courtId) }}</td>
+              <td>{{ groupName(schedule.categoryGroupId) }}</td>
+              <td>{{ coachName(schedule.coachId) }}</td>
+              <td>{{ schedule.capacity ?? '—' }}</td>
+              <td>{{ schedule.active ? 'Sí' : 'No' }}</td>
+              <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openEdit(schedule)">Editar</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="askDelete(schedule)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (facade.data()) {
+    <!-- El vacío sólo cuando la lista LLEGÓ vacía: si data() es null la carga falló. -->
+    <div class="a-empty">
+      Todavía no cargaste ningún horario.
+    </div>
+  }
+</section>
+
+<app-horario-form-modal
+  [courts]="facade.courts()"
+  [coaches]="facade.coaches()"
+  [categoryGroups]="facade.categoryGroups()"
+  [sessionTypes]="facade.sessionTypes()"
+  [error]="errorText()"
+  [saving]="facade.loading()"
+  (saved)="onSaved($event)" />
+
+<app-generar-clases-modal
+  [generables]="generables()"
+  [error]="generarErrorText()"
+  [generating]="facade.generating()"
+  (confirmed)="onGenerarConfirmado($event)" />
+
+<app-confirm-delete-modal
+  [itemName]="deleteItemName()"
+  (confirmed)="onDeleteConfirmed()" />

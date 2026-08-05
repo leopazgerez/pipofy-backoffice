@@ -1,0 +1,72 @@
+import { Injectable, computed, inject } from '@angular/core';
+import { SignalStore } from '@shared/signal-store/signal-store.base';
+import { CategoryGroupsRepository } from '@domain/contracts/category-groups.repository';
+import {
+  CategoryGroup,
+  CategoryGroupInput,
+  createCategoryGroupDraft,
+} from '@domain/entities/category-group';
+import { DomainError } from '@domain/errors';
+import { toDomainError } from '@data/http/to-domain-error';
+
+/**
+ * ponytail: create/update/remove reusan `loading`, así que la tabla muestra su spinner
+ * mientras se guarda. Es aceptable porque el modal la tapa. Techo: si molesta, un signal
+ * `saving` aparte — no antes.
+ */
+@Injectable()
+export class GruposCategoriaFacade extends SignalStore<CategoryGroup[], DomainError> {
+  private readonly repo = inject(CategoryGroupsRepository);
+
+  /**
+   * El backend no ordena (§3.6): sin esto, editar un grupo lo manda al final de la tabla
+   * porque Postgres devuelve el orden físico del heap y un UPDATE mueve la fila.
+   */
+  readonly sorted = computed(() => {
+    const rows = this.data() ?? [];
+    return [...rows].sort((a, b) => a.name.localeCompare(b.name));
+  });
+
+  load(): Promise<void> {
+    return this.run(this.repo.list(), toDomainError);
+  }
+
+  /**
+   * La página lo llama al abrir el formulario: como le pasa `error()` al modal, sin esto un
+   * error viejo del load() se mostraría dentro de un alta recién abierta. Vive acá y no en
+   * SignalStore porque `setError` es protected y la base se mantiene mínima a propósito.
+   */
+  clearError(): void {
+    this.setError(null);
+  }
+
+  /**
+   * createCategoryGroupDraft tira de forma síncrona cuando el nombre está vacío; va DENTRO
+   * de la promesa para que run()/toDomainError normalicen tanto la invariante de dominio
+   * como el fallo del repo. Mismo patrón que CanchasFacade.create().
+   */
+  create(input: CategoryGroupInput): Promise<void> {
+    return this.run(
+      Promise.resolve()
+        .then(() => this.repo.create(createCategoryGroupDraft(input)))
+        .then(() => this.repo.list()),
+      toDomainError,
+    );
+  }
+
+  update(id: string, input: CategoryGroupInput): Promise<void> {
+    return this.run(
+      Promise.resolve()
+        .then(() => this.repo.update(id, createCategoryGroupDraft(input)))
+        .then(() => this.repo.list()),
+      toDomainError,
+    );
+  }
+
+  remove(id: string): Promise<void> {
+    return this.run(
+      this.repo.remove(id).then(() => this.repo.list()),
+      toDomainError,
+    );
+  }
+}

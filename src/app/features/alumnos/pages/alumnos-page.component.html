@@ -1,0 +1,69 @@
+<section class="panel">
+  <div class="panel-head">
+    <h3>Alumnos</h3>
+    <div class="search-box">
+      <label class="sr-only" for="alumnos-q">Buscar alumno por nombre, apellido o teléfono</label>
+      <input id="alumnos-q" type="search" placeholder="Buscar alumno…" (input)="onSearch($event)" />
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openNew()">+ Nuevo alumno</button>
+  </div>
+
+  <!-- BANNER, no una rama del chain: la facade también ESCRIBE, y un error de guardado no
+       puede reemplazar la tabla que data() sigue teniendo intacta. -->
+  @if (errorText()) {
+    <p class="notice hold" role="alert">{{ errorText() }}</p>
+  }
+
+  @if (facade.loading()) {
+    <p class="a-body">Cargando alumnos…</p>
+  } @else if (filtered().length) {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Alumno</th>
+            <th scope="col">Teléfono</th>
+            <th scope="col">Categoría</th>
+            <th scope="col">Mano</th>
+            <th scope="col">Ranking</th>
+            <th scope="col" class="cell-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (student of filtered(); track student.id) {
+            <tr>
+              <td>{{ displayName(student) }}</td>
+              <td>{{ student.phone }}</td>
+              <td>{{ categoryName(student.categoryId) }}</td>
+              <td>{{ handName(student.dominantHand) }}</td>
+              <td>{{ student.ranking ?? '—' }}</td>
+              <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openEdit(student)">Editar</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="askDelete(student)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (facade.data()) {
+    <!-- El vacío sólo cuando la lista LLEGÓ vacía: si data() es null la carga falló y lo que
+         corresponde es el banner de arriba, no "todavía no cargaste ningún alumno". -->
+    <div class="a-empty">
+      @if (query()) {
+        Ningún alumno coincide con la búsqueda.
+      } @else {
+        Todavía no cargaste ningún alumno.
+      }
+    </div>
+  }
+</section>
+
+<app-alumno-form-modal
+  [categories]="facade.categories()"
+  [error]="errorText()"
+  (saved)="onSaved($event)" />
+
+<app-confirm-delete-modal
+  [itemName]="deletingName()"
+  (confirmed)="onDeleteConfirmed()" />
