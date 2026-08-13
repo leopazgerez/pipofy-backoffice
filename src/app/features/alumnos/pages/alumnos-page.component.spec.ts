@@ -95,7 +95,8 @@ describe('AlumnosPageComponent', () => {
   it('si la carga FALLA muestra el banner y NO el vacío', async () => {
     const { el } = await mount({ list: () => Promise.reject({ kind: 'forbidden' as const }) });
     expect(el.querySelector('[role="alert"]')).not.toBeNull();
-    expect(el.querySelector('.a-empty')).toBeNull();
+    // Acotado al panel: el modal de planes tiene su propio .a-empty y vive fuera del <section>.
+    expect(el.querySelector('.panel .a-empty')).toBeNull();
   });
 
   it('un error de guardado NO reemplaza la tabla y deja el modal abierto', async () => {

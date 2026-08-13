@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { occupancyPercent, occupancyState } from '../grupos-format';
+import { occupancyPercent } from '@domain/occupancy';
+import { occupancyState } from '../grupos-format';
 
 /**
  * Celda de cupo: barra mini + n/N. Origen: index-v2.html:1697-1704 (`cupoCell()`).

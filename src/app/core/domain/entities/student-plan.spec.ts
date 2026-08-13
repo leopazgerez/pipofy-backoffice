@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { StudentPlan, studentPlanIsUsable, usableCredits } from './student-plan';
+import {
+  StudentPlan,
+  studentPlanIsExpired,
+  studentPlanIsUsable,
+  usableCredits,
+} from './student-plan';
 
 function plan(over: Partial<StudentPlan> = {}): StudentPlan {
   return {
@@ -40,6 +45,27 @@ describe('studentPlanIsUsable', () => {
 
   it('creditsRemaining null cuenta como cero', () => {
     expect(studentPlanIsUsable(plan({ creditsRemaining: null }), '2026-08-13')).toBe(false);
+  });
+});
+
+describe('studentPlanIsExpired', () => {
+  // Es la pregunta que hace la marca "Vencido" de la fila, y NO es la negación de
+  // studentPlanIsUsable: un plan sin créditos pero vigente no está vencido.
+  it('un plan sin créditos pero vigente NO está vencido', () => {
+    expect(studentPlanIsExpired(plan({ creditsRemaining: 0 }), '2026-08-13')).toBe(false);
+    expect(studentPlanIsUsable(plan({ creditsRemaining: 0 }), '2026-08-13')).toBe(false);
+  });
+
+  it('el día del vencimiento todavía no está vencido', () => {
+    expect(studentPlanIsExpired(plan({ expiresAt: '2026-08-13' }), '2026-08-13')).toBe(false);
+  });
+
+  it('el día siguiente sí', () => {
+    expect(studentPlanIsExpired(plan({ expiresAt: '2026-08-12' }), '2026-08-13')).toBe(true);
+  });
+
+  it('sin fecha nunca está vencido', () => {
+    expect(studentPlanIsExpired(plan({ expiresAt: null }), '2030-01-01')).toBe(false);
   });
 });
 

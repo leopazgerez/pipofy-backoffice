@@ -5,24 +5,16 @@ import { SessionStore } from '../auth/session-store';
 import { TokenRefresher } from './token-refresher';
 
 /**
- * Las rutas de /auth/ que NO llevan Bearer. Lista explícita y no el prefijo `/auth/`, porque
- * `POST /auth/change-password` está detrás de JwtAuthGuard: con el prefijo salía sin token y
- * daba 401 para siempre.
+ * De las diez rutas de /auth/, `change-password` es la ÚNICA detrás de JwtAuthGuard. Se
+ * escribe como excepción y no como allowlist de las otras nueve: una lista de públicas hay
+ * que editarla cada vez que la API suma un endpoint, y con `includes()` cada entrada es
+ * además una subcadena que puede matchear una URL ajena.
  */
-const PUBLIC_AUTH_PATHS = [
-  '/auth/login',
-  '/auth/signup',
-  '/auth/refresh',
-  '/auth/logout',
-  '/auth/verify-email',
-  '/auth/resend-verification',
-  '/auth/password-reset/request',
-  '/auth/password-reset/confirm',
-];
+const AUTHENTICATED_AUTH_PATH = '/auth/change-password';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isAuthRoute = req.url.includes('/auth/');
-  if (PUBLIC_AUTH_PATHS.some((path) => req.url.includes(path))) return next(req);
+  if (isAuthRoute && !req.url.includes(AUTHENTICATED_AUTH_PATH)) return next(req);
 
   // inject() DEBE ser sincrónico acá arriba: dentro de catchError ya no hay contexto
   // de inyección y tira NG0203.

@@ -17,15 +17,6 @@ export function occupancyState(enrolled: number, capacity: number): OccupancySta
   return 'ok';
 }
 
-/**
- * Ancho de la barra de cupo, 0..100.
- *
- * Se re-exporta en vez de definirse acá: el dashboard necesita la misma fórmula y
- * `features/dashboard` no puede importar de `features/grupos`. La implementación se mudó a
- * `@domain/occupancy`, que es el único lugar que alcanzan las tres capas que la usan.
- */
-export { occupancyPercent } from '@domain/occupancy';
-
 /** Umbrales de la barra de asistencia. Origen: index-v2.html:1737. */
 export function attendanceState(rate: number): AttendanceState {
   if (rate >= 80) return 'high';   // 80 exacto es 'high'

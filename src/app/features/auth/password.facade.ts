@@ -22,35 +22,34 @@ export class PasswordFacade extends SignalStore<void, DomainError> {
   /** La operación terminó OK. La pantalla la usa para pasar al estado de éxito. */
   readonly done = this._done.asReadonly();
 
-  async change(currentPassword: string, newPassword: string): Promise<void> {
+  /** run() devuelve void y se traga el error en el signal: esto recupera el "¿salió bien?". */
+  private async attempt(work: Promise<void>): Promise<void> {
     this._done.set(false);
-    await this.run(
+    await this.run(work, toDomainError);
+    this._done.set(this.error() === null);
+  }
+
+  change(currentPassword: string, newPassword: string): Promise<void> {
+    return this.attempt(
       this.auth.changePassword(currentPassword, newPassword).then(() => {
         // Dentro de la promesa: si la API rechaza, la bandera NO se toca y el guard sigue
         // exigiendo el cambio.
         this.session.passwordChanged();
       }),
-      toDomainError,
     );
-    this._done.set(this.error() === null);
   }
 
-  async requestReset(email: string): Promise<void> {
-    this._done.set(false);
-    await this.run(this.auth.requestPasswordReset(email), toDomainError);
-    this._done.set(this.error() === null);
+  requestReset(email: string): Promise<void> {
+    return this.attempt(this.auth.requestPasswordReset(email));
   }
 
-  async confirmReset(token: string, newPassword: string): Promise<void> {
-    this._done.set(false);
-    await this.run(
+  confirmReset(token: string, newPassword: string): Promise<void> {
+    return this.attempt(
       this.auth.confirmPasswordReset(token, newPassword).then(() => {
         // La API revoca todos los refresh tokens del usuario al confirmar
         // (auth.service.ts:269): la sesión que hubiera acá quedó muerta.
         this.session.clear();
       }),
-      toDomainError,
     );
-    this._done.set(this.error() === null);
   }
 }

@@ -21,10 +21,19 @@ export interface StudentPlan {
  * `today` entra por parámetro y no se lee de `new Date()` acá: el dominio es TS puro y
  * testeable, y quién sabe qué día es "hoy" en la zona del club es la capa de arriba.
  * Ambas fechas son yyyy-MM-dd, así que comparar strings alcanza y ordena bien.
+ *
+ * Separado de studentPlanIsUsable porque la pantalla necesita las DOS preguntas por
+ * separado: "vencido" es una marca en la fila, "utilizable" decide si suma créditos. Antes
+ * la facade tenía su propia copia de esta línea llamada isUsable(), que devolvía true para
+ * un plan sin créditos y contradecía al total del encabezado.
  */
+export function studentPlanIsExpired(plan: StudentPlan, today: string): boolean {
+  return plan.expiresAt !== null && plan.expiresAt < today;
+}
+
 export function studentPlanIsUsable(plan: StudentPlan, today: string): boolean {
   if ((plan.creditsRemaining ?? 0) <= 0) return false;
-  return plan.expiresAt === null || plan.expiresAt >= today;
+  return !studentPlanIsExpired(plan, today);
 }
 
 /** Los créditos que el alumno puede usar HOY: los de planes vencidos no cuentan. */

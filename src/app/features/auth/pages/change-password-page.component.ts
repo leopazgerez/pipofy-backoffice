@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BrandmarkComponent } from '@shared/ui/brandmark.component';
-import { domainErrorMessage } from '@domain/errors';
+import { formMessage } from '../form-message';
 import { PasswordFacade } from '../password.facade';
 
 /**
@@ -57,15 +57,10 @@ import { PasswordFacade } from '../password.facade';
       </form>
     </main>
   `,
+  styleUrl: './auth-page.css',
   styles: [`
-    .page{max-width:420px;margin:0 auto;padding:var(--space-lg) var(--space-md)}
-    .masthead{margin-bottom:var(--space-lg)}
-    .card{display:flex;flex-direction:column;gap:var(--space-md);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)}
     .step-head h2{font-size:var(--text-xl)}
     .step-head p{font-size:var(--text-sm);color:var(--color-fg-muted);margin-top:var(--space-xs)}
-    .field{display:flex;flex-direction:column;gap:var(--space-xs)}
-    .field label{font-size:var(--text-sm);font-weight:600}
-    .field input{padding:12px var(--space-md);border:1.5px solid var(--color-border-strong);border-radius:var(--radius-sm);background:var(--color-surface);font-size:var(--text-md)}
     .field input:focus-visible{outline:2.5px solid var(--color-ring);outline-offset:2px}
     .error{font-size:var(--text-sm);color:var(--color-destructive);font-weight:600}
   `],
@@ -84,12 +79,7 @@ export class ChangePasswordPageComponent {
 
   private readonly localError = signal('');
 
-  protected readonly message = computed(() => {
-    const local = this.localError();
-    if (local) return local;
-    const err = this.facade.error();
-    return err ? domainErrorMessage(err) : '';
-  });
+  protected readonly message = computed(() => formMessage(this.localError(), this.facade.error()));
 
   protected async onSubmit(): Promise<void> {
     this.localError.set('');

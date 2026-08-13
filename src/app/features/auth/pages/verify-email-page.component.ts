@@ -51,19 +51,16 @@ import { VerificationFacade } from '../verification.facade';
       </section>
     </main>
   `,
+  styleUrl: './auth-page.css',
   styles: [`
-    .page{max-width:420px;margin:0 auto;padding:var(--space-lg) var(--space-md)}
-    .masthead{margin-bottom:var(--space-lg)}
-    .card{display:flex;flex-direction:column;gap:var(--space-md);padding:var(--space-lg);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);text-align:center}
+    .card{text-align:center}
     .badge{width:56px;height:56px;margin:0 auto;border-radius:50%;display:grid;place-items:center}
     .badge.ok{background:var(--color-accent-soft);color:var(--color-accent-strong)}
     .badge.err{background:var(--color-destructive-soft);color:var(--color-destructive)}
     .badge svg{width:28px;height:28px}
     .card h2{font-size:var(--text-xl)}
     .card p{font-size:var(--text-sm);color:var(--color-fg-muted)}
-    .field{display:flex;flex-direction:column;gap:var(--space-xs);text-align:left}
-    .field label{font-size:var(--text-sm);font-weight:600}
-    .field input{padding:12px var(--space-md);border:1.5px solid var(--color-border-strong);border-radius:var(--radius-sm);background:var(--color-surface);font-size:var(--text-md)}
+    .field{text-align:left}
     .field-err{font-size:var(--text-xs);color:var(--color-destructive);font-weight:600;margin-top:2px}
   `],
   providers: [VerificationFacade],

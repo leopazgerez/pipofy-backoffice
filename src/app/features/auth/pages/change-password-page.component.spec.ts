@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { submitForm } from './form-spec-helpers';
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -9,12 +10,6 @@ import { ChangePasswordPageComponent } from './change-password-page.component';
 
 @Component({ standalone: true, template: 'dashboard' })
 class DashboardStubComponent {}
-
-function set(root: HTMLElement, selector: string, value: string): void {
-  const input = root.querySelector<HTMLInputElement>(selector)!;
-  input.value = value;
-  input.dispatchEvent(new Event('input'));
-}
 
 async function mount(repo: Partial<AuthRepository>) {
   TestBed.resetTestingModule();
@@ -35,16 +30,6 @@ async function mount(repo: Partial<AuthRepository>) {
   return harness;
 }
 
-async function submit(harness: RouterTestingHarness, values: Record<string, string>) {
-  const root: HTMLElement = harness.fixture.nativeElement;
-  for (const [sel, value] of Object.entries(values)) set(root, sel, value);
-  harness.fixture.detectChanges();
-  root.querySelector('form')!.dispatchEvent(new Event('submit'));
-  await harness.fixture.whenStable();
-  harness.fixture.detectChanges();
-  return root;
-}
-
 describe('ChangePasswordPageComponent', () => {
   beforeEach(() => localStorage.clear());
 
@@ -54,7 +39,7 @@ describe('ChangePasswordPageComponent', () => {
       changePassword: async (actual: string, nueva: string) => { enviado = [actual, nueva]; },
     });
 
-    await submit(harness, {
+    await submitForm(harness, {
       '#current': 'vieja123',
       '#nueva': 'nuevaClave123',
       '#repetir': 'nuevaClave123',
@@ -71,7 +56,7 @@ describe('ChangePasswordPageComponent', () => {
     let llamado = false;
     const harness = await mount({ changePassword: async () => { llamado = true; } });
 
-    const root = await submit(harness, {
+    const root = await submitForm(harness, {
       '#current': 'vieja123',
       '#nueva': 'nuevaClave123',
       '#repetir': 'otraCosa456',
@@ -86,7 +71,7 @@ describe('ChangePasswordPageComponent', () => {
     let llamado = false;
     const harness = await mount({ changePassword: async () => { llamado = true; } });
 
-    await submit(harness, { '#current': 'vieja123', '#nueva': 'corta', '#repetir': 'corta' });
+    await submitForm(harness, { '#current': 'vieja123', '#nueva': 'corta', '#repetir': 'corta' });
 
     expect(llamado).toBe(false);
     expect(TestBed.inject(Router).url).toBe('/cambiar-clave');
@@ -98,7 +83,7 @@ describe('ChangePasswordPageComponent', () => {
         Promise.reject({ kind: 'domain' as const, message: 'La contraseña actual es incorrecta.' }),
     });
 
-    const root = await submit(harness, {
+    const root = await submitForm(harness, {
       '#current': 'mal',
       '#nueva': 'nuevaClave123',
       '#repetir': 'nuevaClave123',

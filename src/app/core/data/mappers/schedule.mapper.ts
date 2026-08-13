@@ -1,5 +1,6 @@
 import { Schedule, ScheduleDraft } from '@domain/entities/schedule';
 import { ScheduleDto, ScheduleRequest } from '../dto/schedules.dto';
+import { toYmd } from './to-ymd';
 
 /**
  * '1970-01-01T18:00:00.000Z' → '18:00'.
@@ -14,13 +15,6 @@ import { ScheduleDto, ScheduleRequest } from '../dto/schedules.dto';
 function toHhMm(raw: string | null): string | null {
   if (raw === null) return null;
   const m = /T(\d{2}:\d{2})/.exec(raw);
-  return m === null ? null : m[1];
-}
-
-/** '2026-08-01T00:00:00.000Z' → '2026-08-01', que es lo que quiere <input type="date">. */
-function toYmd(raw: string | null): string | null {
-  if (raw === null) return null;
-  const m = /^(\d{4}-\d{2}-\d{2})/.exec(raw);
   return m === null ? null : m[1];
 }
 

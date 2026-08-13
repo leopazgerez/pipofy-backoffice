@@ -1,0 +1,43 @@
+/* Chrome común de las cinco pantallas de auth (login, verify-email, revisa-tu-mail,
+   reset-password, cambiar-clave). Estaba copiado verbatim en las cinco: cualquier retoque al
+   look del formulario había que hacerlo en cinco lugares.
+
+   Sólo entran las reglas IDÉNTICAS en las cinco. Lo que difiere —el centrado de las tarjetas
+   de estado, los badges, .step-head, .legal— se queda en el `styles` de cada página, y toca
+   propiedades que estas reglas no fijan, así que no hay pelea de cascada.
+
+   No usa el primitivo `.field` de styles/components.css a propósito: el de auth tiene borde
+   de 1.5px y outline en :focus-visible, y unificarlos es un cambio visual, no una limpieza. */
+.page {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md);
+}
+.masthead {
+  margin-bottom: var(--space-lg);
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.field label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.field input {
+  padding: 12px var(--space-md);
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: var(--text-md);
+}

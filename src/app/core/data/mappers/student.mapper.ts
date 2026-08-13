@@ -2,6 +2,7 @@ import { Student, StudentDraft } from '@domain/entities/student';
 import { StudentPlan } from '@domain/entities/student-plan';
 import { StudentDto, StudentRequest } from '../dto/students.dto';
 import { StudentPlanDto } from '../dto/student-plans.dto';
+import { toYmd } from './to-ymd';
 
 export function toStudent(dto: StudentDto): Student {
   return {
@@ -9,9 +10,7 @@ export function toStudent(dto: StudentDto): Student {
     phone: dto.phone,
     firstName: dto.firstName ?? '',
     lastName: dto.lastName ?? '',
-    // La columna es @db.Date pero Prisma la devuelve como DateTime ISO completo
-    // ("2001-05-03T00:00:00.000Z"); <input type="date"> sólo acepta yyyy-MM-dd.
-    birthDate: dto.birthDate ? dto.birthDate.slice(0, 10) : null,
+    birthDate: toYmd(dto.birthDate),
     categoryId: dto.categoryId,
     dominantHand: dto.dominantHand,
     ranking: dto.ranking,
@@ -41,17 +40,17 @@ export function toStudentRequest(draft: StudentDraft): StudentRequest {
 }
 
 /**
- * Las cuatro columnas de fecha son DateTime en Prisma y llegan como ISO completo; la pantalla
- * sólo muestra el día. Se recorta acá y no en el template para que la comparación de
- * vencimiento del dominio (studentPlanIsUsable) reciba yyyy-MM-dd de los dos lados.
+ * Las columnas de fecha son DateTime en Prisma y llegan como ISO completo; la pantalla sólo
+ * muestra el día. Se recorta acá y no en el template para que la comparación de vencimiento
+ * del dominio (studentPlanIsExpired) reciba yyyy-MM-dd de los dos lados.
  */
 export function toStudentPlan(dto: StudentPlanDto): StudentPlan {
   return {
     id: dto.id,
     planId: dto.planId,
-    purchasedAt: dto.purchasedAt ? dto.purchasedAt.slice(0, 10) : null,
+    purchasedAt: toYmd(dto.purchasedAt),
     creditsTotal: dto.creditsTotal,
     creditsRemaining: dto.creditsRemaining,
-    expiresAt: dto.expiresAt ? dto.expiresAt.slice(0, 10) : null,
+    expiresAt: toYmd(dto.expiresAt),
   };
 }

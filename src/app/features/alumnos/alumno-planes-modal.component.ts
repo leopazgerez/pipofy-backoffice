@@ -29,9 +29,11 @@ import { AlumnoPlanesFacade } from './alumno-planes.facade';
         </p>
 
         @if (planes().length === 0) {
-          <p class="hint">Este alumno todavía no compró ningún plan.</p>
+          <p class="a-empty">Este alumno todavía no compró ningún plan.</p>
         } @else {
-          <table class="tabla">
+          <!-- Sin clase ni CSS de tabla: los selectores de elemento de styles/components.css
+               ya estilan table/th/td en toda la app, igual que en roster-table. -->
+          <table>
             <thead>
               <tr><th>Plan</th><th>Comprado</th><th>Créditos</th><th>Vence</th></tr>
             </thead>
@@ -44,10 +46,10 @@ import { AlumnoPlanesFacade } from './alumno-planes.facade';
                   <td>
                     @if (plan.expiresAt === null) {
                       No vence
-                    } @else if (facade.isUsable(plan)) {
-                      {{ plan.expiresAt }}
-                    } @else {
+                    } @else if (facade.isExpired(plan)) {
                       <span class="vencido">Vencido {{ plan.expiresAt }}</span>
+                    } @else {
+                      {{ plan.expiresAt }}
                     }
                   </td>
                 </tr>
@@ -61,9 +63,6 @@ import { AlumnoPlanesFacade } from './alumno-planes.facade';
   styles: [`
     .creditos{font-size:var(--text-md);margin-bottom:var(--space-md)}
     .creditos strong{font-size:var(--text-xl);color:var(--color-primary)}
-    .tabla{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
-    .tabla th{text-align:left;font-weight:600;color:var(--color-fg-muted);padding:6px 8px;border-bottom:1px solid var(--color-border)}
-    .tabla td{padding:8px;border-bottom:1px solid var(--color-border)}
     .vencido{color:var(--color-destructive);font-weight:600}
   `],
 })

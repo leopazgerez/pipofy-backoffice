@@ -11,7 +11,8 @@ import {
   ClassSessionListDtoSchema,
   WaitingListDtoSchema,
 } from '../dto/class-session.dto';
-import { isOnLocalDate, localDateKey, toDashboardSnapshot } from '../mappers/dashboard.mapper';
+import { localDateKey } from '@domain/local-date';
+import { isOnLocalDate, toDashboardSnapshot } from '../mappers/dashboard.mapper';
 import { toDomainError } from '../http/to-domain-error';
 import { ApiClient } from '../http/api-client';
 import { CatalogsRepository } from './catalogs.repository';

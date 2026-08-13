@@ -68,4 +68,28 @@ describe('AlumnoPlanesFacade', () => {
     expect(f.error()).toBeNull();
     expect(f.planName('10')).toBe('Plan #10');
   });
+
+  // La facade es scoped a la ruta: revisar diez alumnos seguidos pedía diez veces la misma
+  // lista, que no cambia mientras dure la pantalla.
+  it('el catálogo de planes se pide UNA vez, aunque se abran varios alumnos', async () => {
+    let pedidos = 0;
+    const f = setup(
+      { plans: async () => [plan()] },
+      { list: async () => { pedidos++; return [{ id: '10', name: 'Mensual' } as Plan]; } },
+    );
+    await f.load('7');
+    await f.load('8');
+    await f.load('9');
+    expect(pedidos).toBe(1);
+    expect(f.planName('10')).toBe('Mensual');
+  });
+
+  // isExpired() delega en el dominio: la copia local ignoraba los créditos y decía que un
+  // plan agotado seguía vigente mientras el encabezado marcaba 0.
+  it('isExpired() mira sólo la fecha y NO contradice a credits()', async () => {
+    const f = setup({ plans: async () => [plan({ creditsRemaining: 0 })] });
+    await f.load('7');
+    expect(f.isExpired(plan({ creditsRemaining: 0 }))).toBe(false);
+    expect(f.credits()).toBe(0);
+  });
 });

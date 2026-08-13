@@ -7,6 +7,7 @@ import {
   WaitlistEntry,
 } from '@domain/entities/dashboard-snapshot';
 import { occupancyPercent } from '@domain/occupancy';
+import { localDateKey } from '@domain/local-date';
 import { catalogLabel } from '@data/catalog-labels';
 import { CatalogItem } from '../dto/catalogs.dto';
 import { ClassSessionDto } from '../dto/class-session.dto';
@@ -26,19 +27,6 @@ export interface DashboardSources {
   /** sessionId → cuántos esperan. Sólo trae las sesiones llenas que se consultaron. */
   readonly waitingCounts: ReadonlyMap<string, number>;
   readonly today: Date;
-}
-
-/**
- * 'YYYY-MM-DD' en hora LOCAL.
- *
- * NO usar toISOString(): eso da la fecha en UTC y reintroduce exactamente el bug que este
- * filtro existe para tapar (spec §3.2). Se exporta porque el repositorio arma la ventana
- * from/to con la misma noción de "hoy".
- */
-export function localDateKey(d: Date): string {
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${month}-${day}`;
 }
 
 /**

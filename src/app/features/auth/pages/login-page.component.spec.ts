@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { set } from './form-spec-helpers';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -7,12 +8,6 @@ import { AuthRepository } from '@domain/contracts/auth.repository';
 import { SessionStore } from '@data/auth/session-store';
 import { SessionFacade } from '../session.facade';
 import { LoginPageComponent } from './login-page.component';
-
-function set(root: HTMLElement, selector: string, value: string): void {
-  const input = root.querySelector<HTMLInputElement>(selector)!;
-  input.value = value;
-  input.dispatchEvent(new Event('input'));
-}
 
 function clickText(root: HTMLElement, text: string): void {
   const btn = [...root.querySelectorAll('button')].find((b) => b.textContent?.includes(text));
