@@ -1,25 +1,19 @@
 /* Grilla de canchas — estilos del propio app-court-grid (encapsulados). */
 .grid-wrap { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden; }
+.grid-empty { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: var(--space-lg); color: var(--color-fg-muted); font-size: var(--text-sm); text-align: center; }
 .grid-scroll { overflow-x: auto; }
-.court-grid { display: grid; grid-template-columns: 56px repeat(4, minmax(150px, 1fr)); min-width: 680px; }
+.court-grid { display: grid; grid-template-columns: 56px repeat(var(--n), minmax(150px, 1fr)); min-width: 680px; }
 .court-grid .ch { position: sticky; top: 0; background: var(--color-muted); border-bottom: 1px solid var(--color-border-strong); padding: var(--space-sm); z-index: 1; }
 .court-grid .ch.corner { border-right: 1px solid var(--color-border); }
 .court-grid .ch .cn { font-family: var(--font-heading); font-weight: 600; font-size: var(--text-sm); color: var(--color-fg); display: flex; align-items: center; gap: var(--space-sm); }
-.court-grid .ch .cn .surf { width: 9px; height: 9px; border-radius: 3px; flex: 0 0 auto; }
-.surf.padel { background: var(--color-primary); }
-.surf.tenis { background: var(--color-warning-mark); }
 .court-grid .ch .cmeta { font-size: var(--text-2xs); color: var(--color-fg-subtle); margin-top: 2px; }
 .hourcell { border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: var(--space-sm) var(--space-xs); font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--color-fg-subtle); text-align: right; font-weight: 700; background: var(--color-muted); font-variant-numeric: tabular-nums; }
 .slot { border-right: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); padding: var(--space-xs); min-height: 78px; position: relative; }
 .slot:last-child { border-right: none; }
 .slot.empty { display: grid; place-items: center; }
 
-/* Sesión: la única card clicable de la grilla (abre el modal de cancelar). Lleva el
-   hover de MASTER. Fuente: index-v2.html:203-210. El anillo de foco lo pone el
-   :focus-visible global de tokens.css:91 — no hace falta repetirlo acá. */
-.sess { display: block; width: 100%; text-align: left; border-radius: var(--radius-md); padding: var(--space-sm); height: 100%; border: 1px solid transparent; cursor: pointer; transition: box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease); }
-.sess:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-.sess:active { transform: translateY(0); }
+/* Sesión: card de sólo lectura dentro de la grilla. Fuente: index-v2.html:203-210. */
+.sess { display: block; width: 100%; border-radius: var(--radius-md); padding: var(--space-sm); height: 100%; border: 1px solid transparent; }
 .sess.full { background: var(--color-muted); border-color: var(--color-border-strong); }
 .sess.open { background: var(--color-accent-soft); border-color: var(--color-accent-soft-border); }
 .sess.wait { background: var(--color-warning-soft); border-color: var(--color-warning-soft-border); }

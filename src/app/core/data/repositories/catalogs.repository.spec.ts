@@ -3,8 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { of, throwError, Observable } from 'rxjs';
-import { CatalogsFacade } from './catalogs.facade';
-import { ApiClient } from '@data/http/api-client';
+import { CatalogsRepository } from './catalogs.repository';
+import { ApiClient } from '../http/api-client';
 
 function setup(get: (path: string) => Observable<unknown>) {
   const paths: string[] = [];
@@ -12,14 +12,14 @@ function setup(get: (path: string) => Observable<unknown>) {
   TestBed.configureTestingModule({
     providers: [
       provideZonelessChangeDetection(),
-      CatalogsFacade,
+      CatalogsRepository,
       { provide: ApiClient, useValue: api },
     ],
   });
-  return { facade: TestBed.inject(CatalogsFacade), paths };
+  return { facade: TestBed.inject(CatalogsRepository), paths };
 }
 
-describe('CatalogsFacade', () => {
+describe('CatalogsRepository', () => {
   it('pide el catálogo y lo valida', async () => {
     const { facade, paths } = setup(() => of([{ id: '1', name: 'cemento' }]));
     expect(await facade.surfaceTypes()).toEqual([{ id: '1', name: 'cemento' }]);

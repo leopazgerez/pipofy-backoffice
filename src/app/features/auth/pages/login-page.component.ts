@@ -49,6 +49,7 @@ import { SessionFacade } from '../session.facade';
           {{ facade.loading() ? 'Entrando…' : 'Entrar' }}
         </button>
 
+        <p class="legal"><a routerLink="/reset-password">¿Olvidaste tu contraseña?</a></p>
         <p class="legal">¿No tenés cuenta? <a routerLink="/onboarding">Creá una</a></p>
       </form>
     </main>

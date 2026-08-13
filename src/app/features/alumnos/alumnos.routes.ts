@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ALUMNOS_PROVIDERS } from './alumnos.providers';
 import { AlumnosFacade } from './alumnos.facade';
+import { AlumnoPlanesFacade } from './alumno-planes.facade';
 
 /**
  * Una sola pantalla, así que la facade va acá y no en una ruta padre: no hay tabs entre las
@@ -10,7 +11,7 @@ import { AlumnosFacade } from './alumnos.facade';
 export const ALUMNOS_ROUTES: Routes = [
   {
     path: '',
-    providers: [AlumnosFacade, ...ALUMNOS_PROVIDERS],
+    providers: [AlumnosFacade, AlumnoPlanesFacade, ...ALUMNOS_PROVIDERS],
     loadComponent: () =>
       import('./pages/alumnos-page.component').then((m) => m.AlumnosPageComponent),
   },

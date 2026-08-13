@@ -3,7 +3,7 @@ import { ModalComponent } from '@shared/ui/modal/modal.component';
 import { Plan, PlanInput } from '@domain/entities/plan';
 import { Coach } from '@domain/entities/coach';
 import { CatalogItem } from '@data/dto/catalogs.dto';
-import { catalogLabel } from '../catalog-labels';
+import { catalogLabel } from '@data/catalog-labels';
 
 /**
  * El mismo componente para alta y edición: `open(null)` es alta, `open(plan)` es edición.

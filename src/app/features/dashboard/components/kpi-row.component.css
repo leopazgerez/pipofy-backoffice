@@ -10,6 +10,3 @@
   .kpis { gap: var(--space-md); }
   .kpi .k-val { font-size: var(--text-2xl); }
 }
-@media (min-width: 1024px) {
-  .kpis { grid-template-columns: repeat(4, 1fr); }
-}

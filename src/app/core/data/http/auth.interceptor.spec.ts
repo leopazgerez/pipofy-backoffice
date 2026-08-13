@@ -60,6 +60,37 @@ describe('authInterceptor', () => {
     ctrl.verify();
   });
 
+  it('/auth/change-password SÍ lleva Bearer: es el único /auth/ autenticado', async () => {
+    const { http, ctrl } = setup();
+    const done = firstValueFrom(http.post('/api/auth/change-password', {}));
+    const req = ctrl.expectOne('/api/auth/change-password');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer OLD');
+    req.flush(null);
+    await done;
+    ctrl.verify();
+  });
+
+  it('un 401 de /auth/change-password NO dispara refresh: es "clave actual incorrecta"', async () => {
+    const { http, ctrl } = setup();
+    const done = firstValueFrom(http.post('/api/auth/change-password', {}));
+
+    ctrl.expectOne('/api/auth/change-password')
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    await expect(done).rejects.toBeDefined();
+    ctrl.verify();               // no hubo request a /auth/refresh ni reintento
+  });
+
+  it('/auth/password-reset/confirm sale SIN Authorization: es público', async () => {
+    const { http, ctrl } = setup();
+    const done = firstValueFrom(http.post('/api/auth/password-reset/confirm', {}));
+    const req = ctrl.expectOne('/api/auth/password-reset/confirm');
+    expect(req.request.headers.has('Authorization')).toBe(false);
+    req.flush(null);
+    await done;
+    ctrl.verify();
+  });
+
   it('ante un 401 refresca y reintenta con el token nuevo', async () => {
     const { http, ctrl, store } = setup();
     const done = firstValueFrom(http.get<{ ok: boolean }>('/api/students'));

@@ -17,11 +17,14 @@ export function occupancyState(enrolled: number, capacity: number): OccupancySta
   return 'ok';
 }
 
-/** Ancho de la barra de cupo, 0..100. El guard de capacity evita el NaN% de Math.round(0/0*100). */
-export function occupancyPercent(enrolled: number, capacity: number): number {
-  if (capacity <= 0) return 0;
-  return Math.min(100, Math.round((enrolled / capacity) * 100));
-}
+/**
+ * Ancho de la barra de cupo, 0..100.
+ *
+ * Se re-exporta en vez de definirse acá: el dashboard necesita la misma fórmula y
+ * `features/dashboard` no puede importar de `features/grupos`. La implementación se mudó a
+ * `@domain/occupancy`, que es el único lugar que alcanzan las tres capas que la usan.
+ */
+export { occupancyPercent } from '@domain/occupancy';
 
 /** Umbrales de la barra de asistencia. Origen: index-v2.html:1737. */
 export function attendanceState(rate: number): AttendanceState {

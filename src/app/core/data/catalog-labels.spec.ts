@@ -27,3 +27,18 @@ describe('catalogLabel — tipos de plan', () => {
     expect(catalogLabel('nivelacion')).not.toBe('Nivelacion');
   });
 });
+
+describe('catalogLabel — nombres heredados de Object.prototype', () => {
+  it('no devuelve miembros del prototipo', () => {
+    // Con un objeto literal, `CATALOG_LABELS['constructor']` devolvía la función Object y el
+    // `??` nunca se disparaba: la plantilla renderizaba "function Object() { [native code] }"
+    // como etiqueta de superficie. TypeScript tipa eso como string, así que el compilador no
+    // lo veía. Por eso el mapa es un Map. El backend manda estos nombres crudos.
+    expect(catalogLabel('constructor')).toBe('Constructor');
+    expect(catalogLabel('toString')).toBe('ToString');
+    // No se afirma la etiqueta exacta: el fallback convierte los guiones bajos en espacios y
+    // deja '  proto  '. Lo que importa es que sea un string y no el objeto heredado.
+    expect(typeof catalogLabel('__proto__')).toBe('string');
+    expect(catalogLabel('__proto__')).toContain('proto');
+  });
+});

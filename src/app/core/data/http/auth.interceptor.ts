@@ -4,16 +4,25 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { SessionStore } from '../auth/session-store';
 import { TokenRefresher } from './token-refresher';
 
+/**
+ * Las rutas de /auth/ que NO llevan Bearer. Lista explícita y no el prefijo `/auth/`, porque
+ * `POST /auth/change-password` está detrás de JwtAuthGuard: con el prefijo salía sin token y
+ * daba 401 para siempre.
+ */
+const PUBLIC_AUTH_PATHS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/verify-email',
+  '/auth/resend-verification',
+  '/auth/password-reset/request',
+  '/auth/password-reset/confirm',
+];
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // /auth/* es público y no lleva Bearer. Además, sin este skip un 401 del propio
-  // /auth/refresh dispararía otro refresh: loop infinito.
-  // ponytail: naive por diseño — asume que TODO bajo /auth/ es público. Techo: el día que
-  // se agregue un endpoint autenticado ahí (ej. /auth/change-password, ya nombrado como
-  // próxima feature) va a salir sin Bearer, 401 para siempre y sin refresh porque el 401
-  // handler de abajo también lo saltea. Upgrade: lista explícita de rutas públicas
-  // (/auth/login, /auth/refresh, /auth/signup, /auth/verify-email, /auth/resend-verification,
-  // /auth/logout) en vez de un prefijo.
-  if (req.url.includes('/auth/')) return next(req);
+  const isAuthRoute = req.url.includes('/auth/');
+  if (PUBLIC_AUTH_PATHS.some((path) => req.url.includes(path))) return next(req);
 
   // inject() DEBE ser sincrónico acá arriba: dentro de catchError ya no hay contexto
   // de inyección y tira NG0203.
@@ -27,7 +36,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(withAuth(req)).pipe(
     catchError((err) => {
-      if (!(err instanceof HttpErrorResponse) || err.status !== 401 || !store.refreshToken()) {
+      // isAuthRoute corta dos casos: un 401 de /auth/refresh dispararía otro refresh (loop
+      // infinito), y un 401 de /auth/change-password significa "clave actual incorrecta" —
+      // refrescar y reintentar manda la misma clave equivocada y rota el token de gusto.
+      if (
+        isAuthRoute ||
+        !(err instanceof HttpErrorResponse) ||
+        err.status !== 401 ||
+        !store.refreshToken()
+      ) {
         return throwError(() => err);
       }
       return refresher.run().pipe(switchMap(() => next(withAuth(req))));

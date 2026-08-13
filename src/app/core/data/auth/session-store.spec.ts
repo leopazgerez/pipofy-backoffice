@@ -56,6 +56,17 @@ describe('SessionStore', () => {
     expect(s.mustChangePassword()).toBe(true);   // <- el punto del método
   });
 
+  it('passwordChanged() baja la bandera y la persiste, sin tocar los tokens', () => {
+    // Sin persistir, un F5 después del cambio obligatorio rehidrataba mustChangePassword en
+    // true y el guard volvía a mandar a /cambiar-clave con la contraseña ya cambiada.
+    const s = store();
+    s.set({ accessToken: 'a', refreshToken: 'r', mustChangePassword: true });
+    s.passwordChanged();
+    expect(s.mustChangePassword()).toBe(false);
+    expect(s.accessToken()).toBe('a');
+    expect(store().mustChangePassword()).toBe(false);   // instancia nueva, mismo storage
+  });
+
   it('clear() borra memoria y storage', () => {
     const s = store();
     s.set({ accessToken: 'a', refreshToken: 'r', mustChangePassword: false });

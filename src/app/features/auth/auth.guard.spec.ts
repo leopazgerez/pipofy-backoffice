@@ -13,7 +13,10 @@ class PrivadoComponent {}
 @Component({ standalone: true, template: 'login' })
 class LoginStubComponent {}
 
-async function harness(conSesion: boolean) {
+@Component({ standalone: true, template: 'cambiar-clave' })
+class CambiarClaveStubComponent {}
+
+async function harness(conSesion: boolean, mustChangePassword = false) {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({
     providers: [
@@ -21,12 +24,13 @@ async function harness(conSesion: boolean) {
       SessionStore,
       provideRouter([
         { path: 'login', component: LoginStubComponent },
+        { path: 'cambiar-clave', component: CambiarClaveStubComponent },
         { path: 'dashboard', component: PrivadoComponent, canActivate: [authGuard] },
       ]),
     ],
   });
   if (conSesion) {
-    TestBed.inject(SessionStore).set({ accessToken: 'a', refreshToken: 'r', mustChangePassword: false });
+    TestBed.inject(SessionStore).set({ accessToken: 'a', refreshToken: 'r', mustChangePassword });
   }
   return RouterTestingHarness.create();
 }
@@ -44,6 +48,14 @@ describe('authGuard', () => {
     const h = await harness(false);
     await h.navigateByUrl('/dashboard');
     expect(TestBed.inject(Router).url).toBe('/login?returnUrl=%2Fdashboard');
+  });
+
+  // El redirect vive en el guard y no en el submit del login a propósito: así también cubre
+  // el F5 y el deep-link, que no pasan por la pantalla de login.
+  it('con sesión pero mustChangePassword manda a /cambiar-clave', async () => {
+    const h = await harness(true, true);
+    await h.navigateByUrl('/dashboard');
+    expect(TestBed.inject(Router).url).toBe('/cambiar-clave');
   });
 
   it('devuelve un UrlTree, no un booleano, cuando bloquea', () => {

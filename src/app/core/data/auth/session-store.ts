@@ -51,6 +51,16 @@ export class SessionStore {
     this.persist();
   }
 
+  /**
+   * POST /auth/change-password deja `mustChangePassword` en false del lado de la API
+   * (auth.service.ts:219) pero no devuelve tokens nuevos: sin esto el front se queda con la
+   * bandera vieja y authGuard sigue mandando a /cambiar-clave para siempre.
+   */
+  passwordChanged(): void {
+    this._mustChangePassword.set(false);
+    this.persist();
+  }
+
   clear(): void {
     this._accessToken.set(null);
     this._refreshToken.set(null);

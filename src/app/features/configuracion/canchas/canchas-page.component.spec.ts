@@ -3,7 +3,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { CanchasPageComponent } from './canchas-page.component';
 import { CanchasFacade } from './canchas.facade';
-import { CatalogsFacade } from '../catalogs.facade';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
 import { CourtsRepository } from '@domain/contracts/courts.repository';
 import { Court, CourtDraft } from '@domain/entities/court';
 
@@ -32,7 +32,7 @@ async function mount(over: Partial<CourtsRepository> = {}) {
       CanchasFacade,
       { provide: CourtsRepository, useValue: repo },
       {
-        provide: CatalogsFacade,
+        provide: CatalogsRepository,
         useValue: {
           surfaceTypes: async () => [{ id: '1', name: 'cemento' }, { id: '3', name: 'sintetico' }],
           courtStatuses: async () => [{ id: '1', name: 'disponible' }],

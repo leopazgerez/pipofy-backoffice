@@ -18,7 +18,7 @@ import { CategoryGroup } from '@domain/entities/category-group';
 import { DomainError } from '@domain/errors';
 import { toDomainError } from '@data/http/to-domain-error';
 import { CatalogItem } from '@data/dto/catalogs.dto';
-import { CatalogsFacade } from '../catalogs.facade';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
 
 /**
  * ponytail: create/update/remove reusan `loading`, así que la tabla muestra su spinner
@@ -30,7 +30,7 @@ export class HorariosFacade extends SignalStore<Schedule[], DomainError> {
   private readonly courtsRepo = inject(CourtsRepository);
   private readonly coachesRepo = inject(CoachesRepository);
   private readonly categoryGroupsRepo = inject(CategoryGroupsRepository);
-  private readonly catalogs = inject(CatalogsFacade);
+  private readonly catalogs = inject(CatalogsRepository);
 
   private readonly _courts = signal<readonly Court[]>([]);
   private readonly _coaches = signal<readonly Coach[]>([]);

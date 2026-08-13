@@ -29,3 +29,15 @@ export const LoginRequestSchema = v.object({
   password: v.string(),
 });
 export type LoginRequest = v.InferOutput<typeof LoginRequestSchema>;
+
+export const ChangePasswordRequestSchema = v.object({
+  currentPassword: v.string(),
+  newPassword: v.string(),
+});
+export type ChangePasswordRequest = v.InferOutput<typeof ChangePasswordRequestSchema>;
+
+export const PasswordResetConfirmRequestSchema = v.object({
+  token: v.string(),
+  newPassword: v.string(),
+});
+export type PasswordResetConfirmRequest = v.InferOutput<typeof PasswordResetConfirmRequestSchema>;

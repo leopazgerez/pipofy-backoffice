@@ -3,8 +3,10 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { AlumnosPageComponent } from './alumnos-page.component';
 import { AlumnosFacade } from '../alumnos.facade';
+import { AlumnoPlanesFacade } from '../alumno-planes.facade';
 import { StudentsRepository } from '@domain/contracts/students.repository';
 import { CategoriesRepository } from '@domain/contracts/categories.repository';
+import { PlansRepository } from '@domain/contracts/plans.repository';
 import { Student, StudentDraft } from '@domain/entities/student';
 
 const ALUMNO: Student = {
@@ -24,6 +26,7 @@ async function mount(over: Partial<StudentsRepository> = {}) {
     create: async (_d: StudentDraft) => undefined,
     update: async (_id: string, _d: StudentDraft) => undefined,
     remove: async (_id: string) => undefined,
+    plans: async (_id: string) => [],
     ...over,
   } as StudentsRepository;
 
@@ -31,11 +34,15 @@ async function mount(over: Partial<StudentsRepository> = {}) {
     providers: [
       provideZonelessChangeDetection(),
       AlumnosFacade,
+      // El modal de planes se renderiza siempre (cerrado) y trae su propia facade, que a su
+      // vez necesita PlansRepository para resolver nombres.
+      AlumnoPlanesFacade,
       { provide: StudentsRepository, useValue: repo },
       {
         provide: CategoriesRepository,
         useValue: { list: async () => [{ id: '5', name: 'Quinta', levelOrder: 5 }] },
       },
+      { provide: PlansRepository, useValue: { list: async () => [] } },
     ],
   });
   const fixture = TestBed.createComponent(AlumnosPageComponent);
@@ -112,5 +119,23 @@ describe('AlumnosPageComponent', () => {
     expect(filas(el)).toHaveLength(1);
     expect(el.querySelector('[role="alert"]')!.textContent).toContain('Ya existe un alumno');
     expect(el.querySelector<HTMLDialogElement>('app-alumno-form-modal dialog')!.open).toBe(true);
+  });
+
+  it('el botón Planes abre el modal con los planes DE ESE alumno', async () => {
+    let pedido = '';
+    const { fixture, el } = await mount({
+      plans: async (id: string) => {
+        pedido = id;
+        return [{ id: '9', planId: '10', purchasedAt: '2026-08-01', creditsTotal: 8, creditsRemaining: 5, expiresAt: null }];
+      },
+    });
+
+    const planes = [...filas(el)[0].querySelectorAll('button')].find((b) => b.textContent?.includes('Planes'))!;
+    planes.click();
+    await settle(fixture);
+
+    expect(pedido).toBe('1');   // el id del alumno de la fila, no otro
+    expect(el.querySelector<HTMLDialogElement>('app-alumno-planes-modal dialog')!.open).toBe(true);
+    expect(el.querySelector('[data-test="creditos-totales"]')!.textContent).toContain('5');
   });
 });

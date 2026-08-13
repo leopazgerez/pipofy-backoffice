@@ -42,13 +42,6 @@ export class InvalidRegistrationError extends DomainRuleError {
   }
 }
 
-export class SessionNotFoundError extends DomainRuleError {
-  constructor(courtName: string, hour: string) {
-    super(`No hay sesión en ${courtName} a las ${hour}.`);
-    this.name = 'SessionNotFoundError';
-  }
-}
-
 export class GroupNotFoundError extends DomainRuleError {
   constructor(groupId: string) {
     super(`No existe el grupo ${groupId}.`);

@@ -38,6 +38,7 @@
               <td>{{ handName(student.dominantHand) }}</td>
               <td>{{ student.ranking ?? '—' }}</td>
               <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openPlanes(student)">Planes</button>
                 <button type="button" class="btn btn-ghost btn-sm" (click)="openEdit(student)">Editar</button>
                 <button type="button" class="btn btn-danger btn-sm" (click)="askDelete(student)">Eliminar</button>
               </td>
@@ -67,3 +68,5 @@
 <app-confirm-delete-modal
   [itemName]="deletingName()"
   (confirmed)="onDeleteConfirmed()" />
+
+<app-alumno-planes-modal />

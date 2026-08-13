@@ -5,11 +5,17 @@
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
     "types": [
-      "jasmine"
+      "jasmine",
+      "node"
     ]
   },
+  /* test-setup.ts está excluido de tsconfig.app.json (usa process.env, que no existe en el
+     bundle del navegador). Sin incluirlo acá no lo type-checkea NINGÚN tsconfig, y un typo
+     como `process.env.ZT` compilaría en silencio: los tests de fecha local volverían a la TZ
+     del runner y pasarían con la lógica rota, que es exactamente lo que ese archivo evita. */
   "include": [
     "src/**/*.d.ts",
-    "src/**/*.spec.ts"
+    "src/**/*.spec.ts",
+    "src/test-setup.ts"
   ]
 }

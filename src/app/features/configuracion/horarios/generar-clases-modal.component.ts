@@ -46,9 +46,8 @@ import { SessionGenerationInput } from '@domain/entities/schedule';
       <div class="modal-foot" modal-foot>
         <button type="button" class="btn btn-ghost" (click)="close()">Cancelar</button>
         <!-- .btn-primary, NO .btn-danger: esto CREA, no destruye. El rojo del DS está
-             reservado a ConfirmDeleteModalComponent y cancel-session-modal (§8.4). El aviso
-             de irreversibilidad ya lo carga el .notice.hold de arriba, que es ámbar:
-             ámbar = cuidado, rojo = destruye. -->
+             reservado a ConfirmDeleteModalComponent (§8.4). El aviso de irreversibilidad ya
+             lo carga el .notice.hold de arriba, que es ámbar: ámbar = cuidado, rojo = destruye. -->
         <button type="button" class="btn btn-primary" data-test="confirmar"
                 [disabled]="generating()" (click)="onConfirm()">Generar clases</button>
       </div>

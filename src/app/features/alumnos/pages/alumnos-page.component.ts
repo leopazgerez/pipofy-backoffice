@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { AlumnosFacade } from '../alumnos.facade';
 import { AlumnoFormModalComponent } from '../alumno-form-modal.component';
+import { AlumnoPlanesModalComponent } from '../alumno-planes-modal.component';
 import { dominantHandLabel } from '../hand-label';
 import { ConfirmDeleteModalComponent } from '@shared/ui/confirm-delete-modal/confirm-delete-modal.component';
 import { Student, StudentInput, studentDisplayName } from '@domain/entities/student';
@@ -10,7 +11,7 @@ import { ToastService } from '@shared/ui/toast/toast.service';
 @Component({
   selector: 'app-alumnos-page',
   standalone: true,
-  imports: [AlumnoFormModalComponent, ConfirmDeleteModalComponent],
+  imports: [AlumnoFormModalComponent, ConfirmDeleteModalComponent, AlumnoPlanesModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './alumnos-page.component.html',
   styleUrl: './alumnos-page.component.css',
@@ -21,6 +22,7 @@ export class AlumnosPageComponent {
 
   private readonly form = viewChild.required(AlumnoFormModalComponent);
   private readonly confirm = viewChild.required(ConfirmDeleteModalComponent);
+  private readonly planes = viewChild.required(AlumnoPlanesModalComponent);
 
   protected readonly query = signal('');
   /** Ya no viaja al modal por binding (open() lo recibe por parámetro): sólo enruta el guardado. */
@@ -83,6 +85,11 @@ export class AlumnosPageComponent {
     this.facade.clearError();
     this.editing.set(student);
     this.form().open(student);
+  }
+
+  /** El modal carga solo al abrirse: no toca el error ni el loading de la tabla. */
+  protected openPlanes(student: Student): void {
+    void this.planes().open(student);
   }
 
   protected askDelete(student: Student): void {

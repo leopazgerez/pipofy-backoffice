@@ -3,7 +3,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { PlanesPageComponent } from './planes-page.component';
 import { PlanesFacade } from './planes.facade';
-import { CatalogsFacade } from '../catalogs.facade';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
 import { PlansRepository } from '@domain/contracts/plans.repository';
 import { CoachesRepository } from '@domain/contracts/coaches.repository';
 import { Plan, PlanDraft } from '@domain/entities/plan';
@@ -38,7 +38,7 @@ async function mount(over: Partial<PlansRepository> = {}) {
         useValue: { list: async () => [{ id: '5', displayName: 'Juan Gómez', description: null }] },
       },
       {
-        provide: CatalogsFacade,
+        provide: CatalogsRepository,
         useValue: { planTypes: async () => [{ id: '2', name: 'nivelacion' }] },
       },
     ],

@@ -1,3 +1,10 @@
+// Los tests del dashboard verifican el filtro de fecha LOCAL, que es lo que tapa el bug de
+// la ventana UTC del backend (spec §3.2). Sin una TZ fija, en un runner en UTC esos tests
+// pasan igual con la lógica rota: dejan de verificar nada. Se fija una TZ negativa porque
+// es la del club.
+// Acceso por índice y no `process.env.TZ`: `noPropertyAccessFromIndexSignature` está activo.
+process.env['TZ'] = 'America/Argentina/Buenos_Aires';
+
 /**
  * Test double de <dialog> — jsdom no lo implementa.
  *

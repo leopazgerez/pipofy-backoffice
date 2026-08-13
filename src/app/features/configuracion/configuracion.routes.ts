@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { CONFIGURACION_PROVIDERS } from './configuracion.providers';
-import { CatalogsFacade } from './catalogs.facade';
 import { ClubFacade } from './club/club.facade';
 import { clubCanDeactivate } from './club/club-can-deactivate.guard';
 import { CanchasFacade } from './canchas/canchas.facade';
@@ -11,14 +10,15 @@ import { ProfesoresFacade } from './profesores/profesores.facade';
 import { HorariosFacade } from './horarios/horarios.facade';
 
 /**
- * Las facades van en la ruta PADRE para que el cache de catálogos y las listas sobrevivan
- * al cambio de tab: ir a Categorías y volver a Canchas no vuelve a pedir nada.
+ * Las facades van en la ruta PADRE para que las listas sobrevivan al cambio de tab: ir a
+ * Categorías y volver a Canchas no vuelve a pedir nada. `CatalogsRepository` NO está acá —
+ * vive en root (app.config.ts) porque también lo usa el dashboard, y una instancia por ruta
+ * significaba un cache por ruta.
  */
 export const CONFIGURACION_ROUTES: Routes = [
   {
     path: '',
     providers: [
-      CatalogsFacade,
       ClubFacade,
       CanchasFacade,
       CategoriasFacade,

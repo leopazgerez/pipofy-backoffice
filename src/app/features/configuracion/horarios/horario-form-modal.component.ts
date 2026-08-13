@@ -5,7 +5,7 @@ import { Court } from '@domain/entities/court';
 import { Coach } from '@domain/entities/coach';
 import { CategoryGroup } from '@domain/entities/category-group';
 import { CatalogItem } from '@data/dto/catalogs.dto';
-import { catalogLabel } from '../catalog-labels';
+import { catalogLabel } from '@data/catalog-labels';
 import { WEEKDAY_OPTIONS } from './weekday-label';
 
 /**

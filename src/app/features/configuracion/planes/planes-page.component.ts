@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild
 import { PlanesFacade } from './planes.facade';
 import { PlanFormModalComponent } from './plan-form-modal.component';
 import { formatPlanPrice } from './plan-price';
-import { CatalogsFacade } from '../catalogs.facade';
-import { catalogLabel } from '../catalog-labels';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
+import { catalogLabel } from '@data/catalog-labels';
 import { ConfirmDeleteModalComponent } from '@shared/ui/confirm-delete-modal/confirm-delete-modal.component';
 import { Plan, PlanInput } from '@domain/entities/plan';
 import { CatalogItem } from '@data/dto/catalogs.dto';
@@ -20,7 +20,7 @@ import { ToastService } from '@shared/ui/toast/toast.service';
 })
 export class PlanesPageComponent {
   protected readonly facade = inject(PlanesFacade);
-  private readonly catalogs = inject(CatalogsFacade);
+  private readonly catalogs = inject(CatalogsRepository);
   private readonly toast = inject(ToastService);
 
   private readonly form = viewChild.required(PlanFormModalComponent);

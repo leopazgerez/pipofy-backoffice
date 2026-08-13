@@ -1,4 +1,8 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
@@ -13,6 +17,7 @@ import { ClubRepository } from '@domain/contracts/club.repository';
 import { AuthRepository } from '@domain/contracts/auth.repository';
 import { HttpAuthRepository } from '@data/repositories/http-auth.repository';
 import { HttpClubRepository } from '@data/repositories/http-club.repository';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
 import { environment } from '../environments/environment';
 import { API_CONFIG } from './core/data/config/api-config.token';
 
@@ -36,6 +41,12 @@ export const appConfig: ApplicationConfig = {
     //
     // Resuelve desde root porque ApiClient es providedIn:'root' (api-client.ts:7).
     { provide: ClubRepository, useClass: HttpClubRepository },
+    // Mismo motivo que ClubRepository: lo necesitan DOS rutas lazy distintas — Configuración
+    // y el dashboard, vía el mapper de la grilla. Bindeado en cada ruta, cada una recibía su
+    // propia instancia y por lo tanto su propio cache, y el "se piden una vez por sesión" que
+    // promete su docstring era falso: abrir Configuración y después el dashboard pedía
+    // /catalogs/surface-types dos veces.
+    CatalogsRepository,
     {
       provide: API_CONFIG,
       useValue: {
@@ -43,5 +54,5 @@ export const appConfig: ApplicationConfig = {
         realtimeBaseUrl: environment.realtimeBaseUrl,
       },
     },
-  ]
+  ],
 };

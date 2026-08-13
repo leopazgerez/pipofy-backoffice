@@ -15,6 +15,23 @@ export const VERIFICATION_SENT_ROUTES: Routes = [
   },
 ];
 
+/** La ruta la fija la API: el mail de reset linkea a `${FRONTEND_URL}/reset-password?token=…`. */
+export const RESET_PASSWORD_ROUTES: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/reset-password-page.component').then((m) => m.ResetPasswordPageComponent),
+  },
+];
+
+export const CHANGE_PASSWORD_ROUTES: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/change-password-page.component').then((m) => m.ChangePasswordPageComponent),
+  },
+];
+
 export const VERIFY_EMAIL_ROUTES: Routes = [
   {
     path: '',

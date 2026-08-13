@@ -3,7 +3,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { HorariosPageComponent } from './horarios-page.component';
 import { HorariosFacade } from './horarios.facade';
-import { CatalogsFacade } from '../catalogs.facade';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
 import { SchedulesRepository } from '@domain/contracts/schedules.repository';
 import { CourtsRepository } from '@domain/contracts/courts.repository';
 import { CoachesRepository } from '@domain/contracts/coaches.repository';
@@ -51,7 +51,7 @@ async function mount(over: Partial<SchedulesRepository> = {}): Promise<Component
         useValue: { list: async () => [{ id: 'g1', name: 'Cuarta/Quinta' }] },
       },
       {
-        provide: CatalogsFacade,
+        provide: CatalogsRepository,
         useValue: { sessionTypes: async () => [{ id: '40', name: 'grupal' }] },
       },
     ],
@@ -287,7 +287,7 @@ describe('HorariosPageComponent', () => {
           useValue: { list: async () => [{ id: 'g1', name: 'Cuarta/Quinta' }] },
         },
         {
-          provide: CatalogsFacade,
+          provide: CatalogsRepository,
           useValue: { sessionTypes: async () => [{ id: '40', name: 'grupal' }] },
         },
       ],

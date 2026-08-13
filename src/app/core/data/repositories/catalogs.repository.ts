@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import * as v from 'valibot';
-import { ApiClient } from '@data/http/api-client';
-import { toDomainError } from '@data/http/to-domain-error';
-import { CatalogItem, CatalogListDtoSchema } from '@data/dto/catalogs.dto';
+import { ApiClient } from '../http/api-client';
+import { toDomainError } from '../http/to-domain-error';
+import { CatalogItem, CatalogListDtoSchema } from '../dto/catalogs.dto';
 
 type CatalogName = 'surface-types' | 'court-statuses' | 'plan-types' | 'session-types';
 
@@ -11,15 +11,19 @@ type CatalogName = 'surface-types' | 'court-statuses' | 'plan-types' | 'session-
  * Los cuatro catálogos los siembra `prisma:seed` y no cambian en runtime, así que se piden
  * una vez por sesión y se memoiza la promesa.
  *
+ * Vive en `data` y no en una feature porque lo consumen Configuración y el dashboard, y
+ * `features/*` no puede importar de otra feature (boundaries). Es un repositorio y siempre
+ * lo fue: hace HTTP y valida el borde con valibot.
+ *
+ * Sin contrato abstracto en `domain`: no hay dos implementaciones ni las va a haber, y el
+ * resto de la app lo consume como clase concreta desde hace tres slices.
+ *
  * Se memoiza la PROMESA y no el resultado para que dos componentes que arrancan a la vez
  * compartan una sola request. En el error se borra la entrada: si no, un corte de red deja
  * el catálogo roto hasta recargar la página.
- *
- * No extiende SignalStore: no tiene el triple data/loading/error de una pantalla, tiene un
- * cache. Forzarlo dentro de la base sería el primer caso especial que la ensucia.
  */
 @Injectable()
-export class CatalogsFacade {
+export class CatalogsRepository {
   private readonly api = inject(ApiClient);
   private readonly cache = new Map<CatalogName, Promise<CatalogItem[]>>();
 

@@ -11,7 +11,7 @@ import { Court } from '@domain/entities/court';
 import { Coach } from '@domain/entities/coach';
 import { CategoryGroup } from '@domain/entities/category-group';
 import { CatalogItem } from '@data/dto/catalogs.dto';
-import { CatalogsFacade } from '../catalogs.facade';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
 
 const ROW: Schedule = {
   id: 'row', courtId: 'c1', coachId: 'p1', categoryGroupId: 'g1', sessionTypeId: '40',
@@ -34,7 +34,7 @@ interface LookupOverrides {
   courts?: Partial<CourtsRepository>;
   coaches?: Partial<CoachesRepository>;
   categoryGroups?: Partial<CategoryGroupsRepository>;
-  catalogs?: Partial<CatalogsFacade>;
+  catalogs?: Partial<CatalogsRepository>;
 }
 
 function setup(
@@ -73,7 +73,7 @@ function setup(
   const catalogsFacade = {
     sessionTypes: async () => [SESSION_TYPE],
     ...lookupOver.catalogs,
-  } as unknown as CatalogsFacade;
+  } as unknown as CatalogsRepository;
 
   TestBed.configureTestingModule({
     providers: [
@@ -83,7 +83,7 @@ function setup(
       { provide: CourtsRepository, useValue: courtsRepo },
       { provide: CoachesRepository, useValue: coachesRepo },
       { provide: CategoryGroupsRepository, useValue: categoryGroupsRepo },
-      { provide: CatalogsFacade, useValue: catalogsFacade },
+      { provide: CatalogsRepository, useValue: catalogsFacade },
     ],
   });
   return { facade: TestBed.inject(HorariosFacade), calls };

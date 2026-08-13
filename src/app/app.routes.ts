@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './features/auth/auth.guard';
+import { authGuard, mustBeLoggedIn } from './features/auth/auth.guard';
 
 const enConstruccion = () =>
   import('@shared/ui/en-construccion.component').then((m) => m.EnConstruccionComponent);
@@ -14,6 +14,19 @@ export const routes: Routes = [
     path: 'verify-email',
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.VERIFY_EMAIL_ROUTES),
     data: { title: 'Verificar email' },
+  },
+  {
+    path: 'reset-password',
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.RESET_PASSWORD_ROUTES),
+    data: { title: 'Recuperar contraseña' },
+  },
+  // Autenticada pero FUERA del shell: authGuard manda acá cuando mustChangePassword, así que
+  // colgarla adentro sería un loop de redirects. El guard propio sólo exige sesión.
+  {
+    path: 'cambiar-clave',
+    canActivate: [mustBeLoggedIn],
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.CHANGE_PASSWORD_ROUTES),
+    data: { title: 'Cambiar contraseña' },
   },
   {
     path: 'revisa-tu-mail',

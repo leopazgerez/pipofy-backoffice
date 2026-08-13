@@ -47,7 +47,14 @@ module.exports = tseslint.config(
     plugins: { boundaries },
     settings: {
       "boundaries/legacy-warnings": false,
-      "import/resolver": { node: { extensions: [".ts", ".js"] } },
+      // El resolver "node" solo no ve los alias @domain/@data/@shared/@features de
+      // tsconfig.json: boundaries los trata como paquete externo y no los evalúa, así que una
+      // violación de capas a través de un alias pasaba desapercibida (ver catalog-labels.ts).
+      // El resolver "typescript" lee los `paths` de tsconfig.json y cierra ese agujero.
+      "import/resolver": {
+        typescript: { project: "./tsconfig.json" },
+        node: { extensions: [".ts", ".js"] },
+      },
       "import/extensions": [".ts", ".js"],
       "boundaries/elements": [
         { type: "domain", pattern: "src/app/core/domain" },

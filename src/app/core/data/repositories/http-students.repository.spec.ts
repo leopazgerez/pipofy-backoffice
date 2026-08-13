@@ -96,3 +96,50 @@ describe('HttpStudentsRepository escrituras', () => {
       .rejects.toEqual({ kind: 'domain', message: 'Ya existe un alumno con ese teléfono en este club' });
   });
 });
+
+const planRow = (over: Record<string, unknown> = {}) => ({
+  id: '1', studentId: '7', planId: '10',
+  purchasedAt: '2026-08-01T14:00:00.000Z',
+  creditsTotal: 8, creditsRemaining: 5,
+  expiresAt: '2026-09-01T00:00:00.000Z',
+  studentPlanStatusId: '1', deletedAt: null, ...over,
+});
+
+describe('HttpStudentsRepository.plans', () => {
+  it('pide los planes del alumno y recorta las fechas a yyyy-MM-dd', async () => {
+    const { repo, calls } = setup({ get: of([planRow()]) });
+    const plans = await repo.plans('7');
+    expect(calls[0]).toMatchObject({ method: 'get', path: '/students/7/plans' });
+    expect(plans[0]).toEqual({
+      id: '1', planId: '10', purchasedAt: '2026-08-01',
+      creditsTotal: 8, creditsRemaining: 5, expiresAt: '2026-09-01',
+    });
+  });
+
+  // Mismo motivo que en list(): student-plans.service.ts:88 no filtra deletedAt.
+  it('descarta los planes borrados', async () => {
+    const { repo } = setup({
+      get: of([planRow(), planRow({ id: '2', deletedAt: '2026-08-10T00:00:00.000Z' })]),
+    });
+    expect((await repo.plans('7')).map((p) => p.id)).toEqual(['1']);
+  });
+
+  it('un plan sin vencimiento ni créditos llega con nulls, no rompe', async () => {
+    const { repo } = setup({
+      get: of([planRow({ expiresAt: null, creditsTotal: null, creditsRemaining: null, purchasedAt: null })]),
+    });
+    expect((await repo.plans('7'))[0]).toMatchObject({
+      expiresAt: null, creditsTotal: null, creditsRemaining: null, purchasedAt: null,
+    });
+  });
+
+  it('ignora studentPlanStatusId, que no tiene catálogo para traducirse', async () => {
+    const { repo } = setup({ get: of([planRow()]) });
+    expect(Object.keys((await repo.plans('7'))[0])).not.toContain('studentPlanStatusId');
+  });
+
+  it('un payload que deriva sale como DomainError de validación', async () => {
+    const { repo } = setup({ get: of([{ id: 1 }]) });
+    await expect(repo.plans('7')).rejects.toMatchObject({ kind: 'validation' });
+  });
+});

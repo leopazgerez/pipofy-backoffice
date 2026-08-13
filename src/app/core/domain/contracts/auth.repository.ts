@@ -21,4 +21,18 @@ export abstract class AuthRepository {
   abstract logout(refreshToken: string): Promise<void>;
   abstract verifyEmail(token: string): Promise<void>;
   abstract resendVerification(email: string): Promise<void>;
+
+  /**
+   * Único método autenticado del contrato: la API lo saca del JWT, no del body, así que acá
+   * no viaja ningún userId. Al resolver, el backend deja `mustChangePassword` en false
+   * (auth.service.ts:219) — el llamador tiene que reflejarlo en SessionStore.
+   */
+  abstract changePassword(currentPassword: string, newPassword: string): Promise<void>;
+
+  /**
+   * Resuelve igual exista o no el email: la API no revela usuarios (auth.service.ts:225).
+   * La pantalla NO debe prometer "te mandamos un mail", sino "si existe, te llega".
+   */
+  abstract requestPasswordReset(email: string): Promise<void>;
+  abstract confirmPasswordReset(token: string, newPassword: string): Promise<void>;
 }

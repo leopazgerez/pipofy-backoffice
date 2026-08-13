@@ -46,7 +46,7 @@ export class HttpClubRepository extends ClubRepository {
    * que es de otra feature.
    *
    * ponytail: cada llamada re-pide /clubs/me. Techo: RefreshDashboard la llama una vez por
-   * refresco del dashboard. Si eso pesa, un cache como el de CatalogsFacade — no antes.
+   * refresco del dashboard. Si eso pesa, un cache como el de CatalogsRepository — no antes.
    */
   async isActive(_clubId: string): Promise<boolean> {
     try {

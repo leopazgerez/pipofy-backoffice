@@ -3,8 +3,10 @@ import { firstValueFrom } from 'rxjs';
 import * as v from 'valibot';
 import { StudentsRepository } from '@domain/contracts/students.repository';
 import { Student, StudentDraft } from '@domain/entities/student';
+import { StudentPlan } from '@domain/entities/student-plan';
 import { StudentListDtoSchema, StudentRequestSchema } from '../dto/students.dto';
-import { toStudent, toStudentRequest } from '../mappers/student.mapper';
+import { StudentPlanListDtoSchema } from '../dto/student-plans.dto';
+import { toStudent, toStudentPlan, toStudentRequest } from '../mappers/student.mapper';
 import { toDomainError } from '../http/to-domain-error';
 import { ApiClient } from '../http/api-client';
 
@@ -51,6 +53,18 @@ export class HttpStudentsRepository extends StudentsRepository {
   async remove(id: string): Promise<void> {
     try {
       await firstValueFrom(this.api.delete<unknown>(`/students/${id}`));
+    } catch (err) {
+      throw toDomainError(err);
+    }
+  }
+
+  async plans(studentId: string): Promise<StudentPlan[]> {
+    try {
+      const raw = await firstValueFrom(this.api.get<unknown>(`/students/${studentId}/plans`));
+      const dtos = v.parse(StudentPlanListDtoSchema, raw);
+      // Mismo filtro de borrados que list(), por el mismo motivo: el service no lo hace.
+      // El orden ya viene del backend (purchasedAt desc), así que no se reordena acá.
+      return dtos.filter((d) => d.deletedAt === null).map(toStudentPlan);
     } catch (err) {
       throw toDomainError(err);
     }

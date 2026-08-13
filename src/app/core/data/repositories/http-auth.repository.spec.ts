@@ -133,3 +133,59 @@ describe('HttpAuthRepository.resendVerification', () => {
       .rejects.toMatchObject({ kind: 'unknown' });
   });
 });
+
+describe('HttpAuthRepository.changePassword', () => {
+  it('manda las dos claves al endpoint correcto y resuelve void', async () => {
+    let url = '';
+    let body: unknown = null;
+    const r = repo({ post: (u: string, b: unknown) => { url = u; body = b; return of(null); } } as unknown as Partial<HttpClient>);
+    await expect(r.changePassword('vieja123', 'nuevaClave123')).resolves.toBeUndefined();
+    expect(url).toBe('/api/auth/change-password');
+    expect(body).toEqual({ currentPassword: 'vieja123', newPassword: 'nuevaClave123' });
+  });
+
+  // El 401 de ESTE endpoint es "la clave actual no coincide" (auth.service.ts:213), no
+  // "tu sesión venció": mapearlo a 'unauthorized' mostraría el copy equivocado y, peor,
+  // el shell podría desloguear a alguien que sólo escribió mal su contraseña.
+  it('401 -> domain con copy de clave actual incorrecta', async () => {
+    await expect(repo(failWith(401)).changePassword('mal', 'nuevaClave123'))
+      .rejects.toEqual({ kind: 'domain', message: 'La contraseña actual es incorrecta.' });
+  });
+
+  it('un error cae en el mapeo genérico', async () => {
+    await expect(repo(failWith(500)).changePassword('vieja123', 'nuevaClave123'))
+      .rejects.toMatchObject({ kind: 'unknown' });
+  });
+});
+
+describe('HttpAuthRepository.requestPasswordReset', () => {
+  it('manda el email y resuelve void', async () => {
+    let url = '';
+    let body: unknown = null;
+    const r = repo({ post: (u: string, b: unknown) => { url = u; body = b; return of(null); } } as unknown as Partial<HttpClient>);
+    await expect(r.requestPasswordReset('a@b.com')).resolves.toBeUndefined();
+    expect(url).toBe('/api/auth/password-reset/request');
+    expect(body).toEqual({ email: 'a@b.com' });
+  });
+
+  it('un error cae en el mapeo genérico', async () => {
+    await expect(repo(failWith(500)).requestPasswordReset('a@b.com'))
+      .rejects.toMatchObject({ kind: 'unknown' });
+  });
+});
+
+describe('HttpAuthRepository.confirmPasswordReset', () => {
+  it('manda token y clave nueva al endpoint correcto y resuelve void', async () => {
+    let url = '';
+    let body: unknown = null;
+    const r = repo({ post: (u: string, b: unknown) => { url = u; body = b; return of(null); } } as unknown as Partial<HttpClient>);
+    await expect(r.confirmPasswordReset('tok', 'nuevaClave123')).resolves.toBeUndefined();
+    expect(url).toBe('/api/auth/password-reset/confirm');
+    expect(body).toEqual({ token: 'tok', newPassword: 'nuevaClave123' });
+  });
+
+  it('400 -> domain con copy de link vencido', async () => {
+    await expect(repo(failWith(400)).confirmPasswordReset('tok', 'nuevaClave123'))
+      .rejects.toEqual({ kind: 'domain', message: 'El link venció o ya fue usado.' });
+  });
+});

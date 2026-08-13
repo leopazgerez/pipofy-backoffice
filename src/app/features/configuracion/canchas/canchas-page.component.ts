@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { CanchasFacade } from './canchas.facade';
-import { CatalogsFacade } from '../catalogs.facade';
-import { catalogLabel } from '../catalog-labels';
+import { CatalogsRepository } from '@data/repositories/catalogs.repository';
+import { catalogLabel } from '@data/catalog-labels';
 import { CanchaFormModalComponent } from './cancha-form-modal.component';
 import { ConfirmDeleteModalComponent } from '@shared/ui/confirm-delete-modal/confirm-delete-modal.component';
 import { Court, CourtInput } from '@domain/entities/court';
@@ -19,7 +19,7 @@ import { ToastService } from '@shared/ui/toast/toast.service';
 })
 export class CanchasPageComponent {
   protected readonly facade = inject(CanchasFacade);
-  private readonly catalogs = inject(CatalogsFacade);
+  private readonly catalogs = inject(CatalogsRepository);
   private readonly toast = inject(ToastService);
 
   private readonly form = viewChild.required(CanchaFormModalComponent);

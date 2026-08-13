@@ -6,7 +6,13 @@ import { AuthRepository } from '@domain/contracts/auth.repository';
 import { DomainError } from '@domain/errors';
 import { Registration } from '@domain/entities/registration';
 import { Session } from '@domain/entities/session';
-import { LoginRequestSchema, SessionDtoSchema, SignupRequestSchema } from '../dto/auth.dto';
+import {
+  ChangePasswordRequestSchema,
+  LoginRequestSchema,
+  PasswordResetConfirmRequestSchema,
+  SessionDtoSchema,
+  SignupRequestSchema,
+} from '../dto/auth.dto';
 import { toSession, toSignupDto } from '../mappers/auth.mapper';
 import { toDomainError } from '../http/to-domain-error';
 import { API_CONFIG } from '../config/api-config.token';
@@ -91,6 +97,36 @@ export class HttpAuthRepository extends AuthRepository {
       await this.post<unknown>('/auth/resend-verification', { email });
     } catch (err) {
       throw toDomainError(err);
+    }
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      const body = v.parse(ChangePasswordRequestSchema, { currentPassword, newPassword });
+      await this.post<unknown>('/auth/change-password', body);
+    } catch (err) {
+      // Sale CON Bearer: authInterceptor lo excluye de PUBLIC_AUTH_PATHS a propósito.
+      throw mapStatus(err, {
+        401: { kind: 'domain', message: 'La contraseña actual es incorrecta.' },
+      });
+    }
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    try {
+      // Sin schema, igual que resendVerification: un solo campo que ya viene tipado.
+      await this.post<unknown>('/auth/password-reset/request', { email });
+    } catch (err) {
+      throw toDomainError(err);
+    }
+  }
+
+  async confirmPasswordReset(token: string, newPassword: string): Promise<void> {
+    try {
+      const body = v.parse(PasswordResetConfirmRequestSchema, { token, newPassword });
+      await this.post<unknown>('/auth/password-reset/confirm', body);
+    } catch (err) {
+      throw mapStatus(err, { 400: { kind: 'domain', message: 'El link venció o ya fue usado.' } });
     }
   }
 }

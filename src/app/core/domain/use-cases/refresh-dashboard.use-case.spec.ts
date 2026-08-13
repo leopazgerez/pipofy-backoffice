@@ -7,17 +7,13 @@ import { DashboardSnapshot } from '../entities/dashboard-snapshot';
 
 const snapshot: DashboardSnapshot = {
   clubId: 'c1',
-  kpis: { sessionsToday: 18, courtsTotal: 24, occupancyPct: 86, revenueTodayCents: 24_850_000 },
+  kpis: { sessionsToday: 18, courtsTotal: 24, occupancyPct: 86 },
   grid: { courts: [], hours: [], sessions: [] },
-  holds: [],
   waitlist: [],
-  transfers: [],
 };
 
 class FakeDashboards extends DashboardRepository {
   getSnapshot = async () => snapshot;
-  // Requerido por el contrato desde el slice de la capa de DS. RefreshDashboard no lo usa.
-  cancelSession = async () => snapshot;
 }
 
 describe('RefreshDashboard', () => {

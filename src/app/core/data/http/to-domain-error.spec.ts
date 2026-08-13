@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as v from 'valibot';
 import { toDomainError } from './to-domain-error';
-import { DashboardDtoSchema } from '../dto/dashboard.dto';
 import { ClubInactiveError } from '@domain/errors';
 
 describe('toDomainError', () => {
@@ -17,7 +16,11 @@ describe('toDomainError', () => {
   });
   it('maps a Valibot failure to validation with issues', () => {
     let caught: unknown;
-    try { v.parse(DashboardDtoSchema, { club_id: 1 }); } catch (e) { caught = e; }
+    try {
+      v.parse(v.string(), 123);
+    } catch (e) {
+      caught = e;
+    }
     const result = toDomainError(caught);
     expect(result.kind).toBe('validation');
   });
@@ -29,7 +32,10 @@ describe('toDomainError', () => {
     expect(toDomainError(e)).toBe(e);
   });
   it('maps a DomainRuleError to a domain kind carrying its message', () => {
-    expect(toDomainError(new ClubInactiveError('c1'))).toEqual({ kind: 'domain', message: 'Club c1 is inactive' });
+    expect(toDomainError(new ClubInactiveError('c1'))).toEqual({
+      kind: 'domain',
+      message: 'Club c1 is inactive',
+    });
   });
 
   it('mapea 403 a forbidden, no a unauthorized', () => {
@@ -41,9 +47,16 @@ describe('toDomainError', () => {
   it('mapea 400 con message string al mensaje del backend', () => {
     const err = new HttpErrorResponse({
       status: 400,
-      error: { statusCode: 400, message: 'surfaceTypeId inválido: no existe', error: 'Bad Request' },
+      error: {
+        statusCode: 400,
+        message: 'surfaceTypeId inválido: no existe',
+        error: 'Bad Request',
+      },
     });
-    expect(toDomainError(err)).toEqual({ kind: 'domain', message: 'surfaceTypeId inválido: no existe' });
+    expect(toDomainError(err)).toEqual({
+      kind: 'domain',
+      message: 'surfaceTypeId inválido: no existe',
+    });
   });
 
   it('mapea 400 con message string[] (la forma del ValidationPipe) uniendo los mensajes', () => {
