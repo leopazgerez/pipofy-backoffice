@@ -64,6 +64,15 @@ export function buildEnvironment(env, vars) {
   );
 }
 
+/**
+ * Sólo las claves NG_*. El filtro NO es cosmético: es lo que mantiene válido el chequeo de
+ * secretos de buildEnvironment cuando la fuente es `process.env`, que en una máquina de build
+ * trae credenciales de todo tipo que no tienen por qué terminar en el bundle.
+ */
+export function ngVarsFrom(source) {
+  return Object.fromEntries(Object.entries(source).filter(([k]) => k.startsWith('NG_')));
+}
+
 // CLI: solo corre si se pasa un ambiente (el test importa sin argv[2])
 const env = process.argv[2];
 if (env) {
@@ -72,15 +81,24 @@ if (env) {
     process.exit(1);
   }
   const envPath = resolve(process.cwd(), `.env.${env}`);
-  let text;
+  let vars;
   try {
-    text = readFileSync(envPath, 'utf8');
+    vars = parseEnv(readFileSync(envPath, 'utf8'));
   } catch {
-    console.error(`No existe ${envPath}. Copiá .env.example → .env.${env}`);
-    process.exit(1);
+    // Sin archivo se leen del entorno. Es el caso de Render y de cualquier CI: `.env.*` está
+    // gitignoreado a propósito, así que en el servidor de build no existe y las variables
+    // llegan por el dashboard del servicio.
+    vars = ngVarsFrom(process.env);
+    if (Object.keys(vars).length === 0) {
+      console.error(
+        `No existe ${envPath} ni hay variables NG_* en el entorno. Copiá .env.example → .env.${env}`,
+      );
+      process.exit(1);
+    }
+    console.log(`· ${envPath} no existe: usando las NG_* del entorno.`);
   }
   try {
-    const content = buildEnvironment(env, parseEnv(text));
+    const content = buildEnvironment(env, vars);
     writeFileSync(resolve(process.cwd(), `src/environments/${OUT[env]}`), content);
     console.log(`✓ Generado src/environments/${OUT[env]} desde .env.${env}`);
   } catch (e) {

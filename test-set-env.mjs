@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseEnv, buildEnvironment } from './set-env.mjs';
+import { parseEnv, buildEnvironment, ngVarsFrom } from './set-env.mjs';
 
 const full = `
 # comentario
@@ -29,5 +29,14 @@ assert.throws(
   () => buildEnvironment('development', { ...vars, MP_ACCESS_TOKEN: 'x' }),
   /secreto/i,
 );
+
+// Fallback al entorno (Render/CI, donde .env.production no existe): SÓLO entran las NG_*.
+// Sin este filtro, process.env metería credenciales de la máquina de build en el bundle.
+const fromEnv = ngVarsFrom({
+  NG_API_BASE_URL: 'https://pipofy-api.onrender.com/api',
+  AWS_SECRET_ACCESS_KEY: 'no-debe-pasar',
+  PATH: '/usr/bin',
+});
+assert.deepEqual(Object.keys(fromEnv), ['NG_API_BASE_URL']);
 
 console.log('✓ set-env self-check OK');
