@@ -6,8 +6,6 @@ services:
   - type: web
     name: pipofy-backoffice
     runtime: static
-    plan: free
-    region: oregon
     buildCommand: npm ci && npm run build
     # Angular 20 emite el bundle del navegador en browser/, no en la raíz de dist/.
     staticPublishPath: dist/pipofy/browser
@@ -27,6 +25,10 @@ services:
       # 20.18 (el de la API) NO sirve: Angular 20 pide ^20.19 || ^22.12 || >=24.
       - key: NODE_VERSION
         value: 22.12.0
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
     # SPA: sin esto, entrar directo a /dashboard o abrir el link de reset del mail
     # (/reset-password?token=…) devuelve 404 en vez de cargar la app.
     routes:
