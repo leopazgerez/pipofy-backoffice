@@ -1,0 +1,57 @@
+<section class="panel">
+  <div class="panel-head">
+    <h3>Reservas</h3>
+    <div class="field field-dense">
+      <label class="sr-only" for="reservas-fecha">Fecha</label>
+      <input id="reservas-fecha" class="control" type="date"
+             [value]="facade.date()" (change)="onDate($event)" />
+    </div>
+  </div>
+
+  <!-- BANNER, no una rama del chain: la facade también ESCRIBE (vía SesionFacade), y un error
+       de guardado no puede reemplazar la tabla que data() sigue teniendo intacta. -->
+  @if (errorText()) {
+    <p class="notice hold" role="alert">{{ errorText() }}</p>
+  }
+
+  @if (facade.loading()) {
+    <p class="a-body">Cargando clases…</p>
+  } @else if (facade.sorted().length) {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Hora</th>
+            <th scope="col">Cancha</th>
+            <th scope="col">Categoría</th>
+            <th scope="col">Profesor</th>
+            <th scope="col">Cupo</th>
+            <th scope="col" class="cell-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of facade.sorted(); track s.id) {
+            <tr>
+              <td>{{ hora(s) }}</td>
+              <td>{{ court(s) }}</td>
+              <td>{{ grupo(s) }}</td>
+              <td>{{ coach(s) }}</td>
+              <td>{{ cupo(s) }}</td>
+              <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openSession(s)">
+                  Abrir
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (facade.data()) {
+    <!-- El vacío sólo cuando la lista LLEGÓ vacía: si data() es null la carga falló y lo que
+         corresponde es el banner de arriba. -->
+    <div class="a-empty">No hay clases generadas para esta fecha.</div>
+  }
+</section>
+
+<app-sesion-modal [students]="students()" [labels]="label" />

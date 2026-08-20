@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { GruposCategoriaFacade } from './grupos-categoria.facade';
+import { GrupoItemsStore } from './grupo-items-store';
 import { CategoryGroupsRepository } from '@domain/contracts/category-groups.repository';
 import { CategoryGroup, CategoryGroupDraft } from '@domain/entities/category-group';
 
@@ -22,6 +23,7 @@ function setup(over: Partial<CategoryGroupsRepository> = {}) {
     providers: [
       provideZonelessChangeDetection(),
       GruposCategoriaFacade,
+      GrupoItemsStore,
       { provide: CategoryGroupsRepository, useValue: repo },
     ],
   });
@@ -53,6 +55,15 @@ describe('GruposCategoriaFacade', () => {
     const { facade, calls } = setup();
     await facade.remove('1');
     expect(calls).toEqual(['remove', 'list']);
+  });
+
+  it('remove() olvida también la pista de items del grupo', async () => {
+    // Sin esto, crear un grupo nuevo que reusa un id liberado heredaría la pista del borrado.
+    const { facade } = setup();
+    const store = TestBed.inject(GrupoItemsStore);
+    store.write('1', ['3']);
+    await facade.remove('1');
+    expect(store.read('1')).toEqual([]);
   });
 
   it('create() con nombre vacío deja error de dominio y NO llama al repo', async () => {

@@ -1,0 +1,5 @@
+/* La tabla y el panel salen de styles/components.css. Acá sólo va el "dónde": la fecha
+   no debe estirarse a lo ancho del panel-head como haría un .control suelto. */
+#reservas-fecha {
+  max-width: 12rem;
+}

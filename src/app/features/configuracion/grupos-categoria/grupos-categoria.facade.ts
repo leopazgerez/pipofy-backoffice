@@ -8,6 +8,7 @@ import {
 } from '@domain/entities/category-group';
 import { DomainError } from '@domain/errors';
 import { toDomainError } from '@data/http/to-domain-error';
+import { GrupoItemsStore } from './grupo-items-store';
 
 /**
  * ponytail: create/update/remove reusan `loading`, así que la tabla muestra su spinner
@@ -17,6 +18,7 @@ import { toDomainError } from '@data/http/to-domain-error';
 @Injectable()
 export class GruposCategoriaFacade extends SignalStore<CategoryGroup[], DomainError> {
   private readonly repo = inject(CategoryGroupsRepository);
+  private readonly items = inject(GrupoItemsStore);
 
   /**
    * El backend no ordena (§3.6): sin esto, editar un grupo lo manda al final de la tabla
@@ -65,7 +67,12 @@ export class GruposCategoriaFacade extends SignalStore<CategoryGroup[], DomainEr
 
   remove(id: string): Promise<void> {
     return this.run(
-      this.repo.remove(id).then(() => this.repo.list()),
+      this.repo
+        .remove(id)
+        // La pista de items vive en el navegador y el backend no la conoce: si no se borra acá,
+        // queda huérfana para siempre.
+        .then(() => this.items.forget(id))
+        .then(() => this.repo.list()),
       toDomainError,
     );
   }

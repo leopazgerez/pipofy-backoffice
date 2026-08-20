@@ -48,12 +48,16 @@ describe('ClassSessionListDtoSchema', () => {
 describe('WaitingListDtoSchema', () => {
   it('parsea las entradas y tolera el array vacío', () => {
     expect(v.parse(WaitingListDtoSchema, [])).toEqual([]);
-    expect(v.parse(WaitingListDtoSchema, [{ id: '1' }, { id: '2' }])).toHaveLength(2);
+    expect(
+      v.parse(WaitingListDtoSchema, [{ id: '1', studentId: '4', requestedAt: null }]),
+    ).toHaveLength(1);
   });
 
-  it('no exige forma a las entradas: el consumidor sólo usa el largo', () => {
-    // Deliberado: exigir campos que nadie lee haría fallar el parseo por un dato irrelevante.
-    expect(v.parse(WaitingListDtoSchema, [{ cualquierCosa: 1 }, 42])).toHaveLength(2);
+  it('exige la forma de cada entrada: a diferencia del dashboard, la pantalla de reservas lee adentro', () => {
+    // Antes era `v.array(v.unknown())` porque el único consumidor —el dashboard— sólo usaba
+    // el largo. Ahora valida cada fila: reservas necesita `studentId` y el `id` de la
+    // anotación para poder darla de baja.
+    expect(() => v.parse(WaitingListDtoSchema, [{ cualquierCosa: 1 }])).toThrow();
   });
 
   it('rechaza lo que no sea un array', () => {

@@ -1,15 +1,18 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { GruposCategoriaFacade } from './grupos-categoria.facade';
 import { GrupoCategoriaFormModalComponent } from './grupo-categoria-form-modal.component';
+import { GrupoItemsModalComponent } from './grupo-items-modal.component';
 import { ConfirmDeleteModalComponent } from '@shared/ui/confirm-delete-modal/confirm-delete-modal.component';
 import { CategoryGroup, CategoryGroupInput } from '@domain/entities/category-group';
+import { CategoriesRepository } from '@domain/contracts/categories.repository';
+import { Category } from '@domain/entities/category';
 import { domainErrorMessage } from '@domain/errors';
 import { ToastService } from '@shared/ui/toast/toast.service';
 
 @Component({
   selector: 'app-grupos-categoria-page',
   standalone: true,
-  imports: [GrupoCategoriaFormModalComponent, ConfirmDeleteModalComponent],
+  imports: [GrupoCategoriaFormModalComponent, GrupoItemsModalComponent, ConfirmDeleteModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './grupos-categoria-page.component.html',
   styleUrl: './grupos-categoria-page.component.css',
@@ -17,11 +20,14 @@ import { ToastService } from '@shared/ui/toast/toast.service';
 export class GruposCategoriaPageComponent {
   protected readonly facade = inject(GruposCategoriaFacade);
   private readonly toast = inject(ToastService);
+  private readonly categoriesRepo = inject(CategoriesRepository);
 
   private readonly form = viewChild.required(GrupoCategoriaFormModalComponent);
   private readonly confirm = viewChild.required(ConfirmDeleteModalComponent);
+  private readonly items = viewChild.required(GrupoItemsModalComponent);
 
   protected readonly query = signal('');
+  protected readonly categories = signal<readonly Category[]>([]);
   /** Ya no viaja al modal por binding (open() lo recibe por parámetro): sólo enruta el guardado. */
   private readonly editing = signal<CategoryGroup | null>(null);
   protected readonly deleting = signal<CategoryGroup | null>(null);
@@ -34,6 +40,10 @@ export class GruposCategoriaPageComponent {
     this.facade.clearError();
     // La facade se provee en la ruta PADRE, así que cambiar de tab y volver no recarga.
     if (!this.facade.data() && !this.facade.loading()) void this.facade.load();
+
+    // Fallan en silencio, igual que los catálogos de canchas: sin categorías el modal queda
+    // vacío, pero la tabla de grupos sigue siendo usable.
+    void this.categoriesRepo.list().then((v) => this.categories.set(v)).catch(() => undefined);
   }
 
   protected readonly filtered = computed(() => {
@@ -66,6 +76,10 @@ export class GruposCategoriaPageComponent {
     this.facade.clearError();
     this.editing.set(group);
     this.form().open(group);
+  }
+
+  protected openItems(group: CategoryGroup): void {
+    this.items().open(group);
   }
 
   protected askDelete(group: CategoryGroup): void {

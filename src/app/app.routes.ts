@@ -57,6 +57,11 @@ export const routes: Routes = [
         data: { title: 'Grupos y clases', crumb: 'Grupos' },
       },
       {
+        path: 'reservas',
+        loadChildren: () => import('./features/reservas/reservas.routes').then((m) => m.RESERVAS_ROUTES),
+        data: { title: 'Reservas y lista de espera', crumb: 'Operación' },
+      },
+      {
         path: 'alumnos',
         loadChildren: () => import('./features/alumnos/alumnos.routes').then((m) => m.ALUMNOS_ROUTES),
         data: { title: 'Alumnos y créditos', crumb: 'Alumnos' },

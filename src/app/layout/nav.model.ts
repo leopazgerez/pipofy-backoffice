@@ -1,6 +1,13 @@
 export type BadgeKey = 'alerts' | 'payments';
 export type NavGroup = 'Operación' | 'Gestión';
-export type NavIcon = 'dashboard' | 'grupos' | 'alumnos' | 'comercial' | 'plantillas' | 'config';
+export type NavIcon =
+  | 'dashboard'
+  | 'grupos'
+  | 'reservas'
+  | 'alumnos'
+  | 'comercial'
+  | 'plantillas'
+  | 'config';
 
 export interface NavItem {
   readonly label: string;   // etiqueta en la sidebar
@@ -16,6 +23,7 @@ export const NAV_GROUPS: readonly NavGroup[] = ['Operación', 'Gestión'];
 export const NAV_ITEMS: readonly NavItem[] = [
   { label: 'Dashboard',             short: 'Panel',      path: '/dashboard',  group: 'Operación', icon: 'dashboard',  badge: 'alerts' },
   { label: 'Grupos y Clases',       short: 'Grupos',     path: '/grupos',     group: 'Operación', icon: 'grupos' },
+  { label: 'Reservas',              short: 'Reservas',   path: '/reservas',   group: 'Operación', icon: 'reservas' },
   { label: 'Alumnos y Créditos',    short: 'Alumnos',    path: '/alumnos',    group: 'Operación', icon: 'alumnos' },
   { label: 'Comercial y Pagos',     short: 'Pagos',      path: '/comercial',  group: 'Gestión',   icon: 'comercial',  badge: 'payments' },
   { label: 'Plantillas y WhatsApp', short: 'Plantillas', path: '/plantillas', group: 'Gestión',   icon: 'plantillas' },

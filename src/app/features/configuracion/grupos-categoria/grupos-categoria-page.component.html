@@ -30,6 +30,7 @@
             <tr>
               <td>{{ group.name || '(sin nombre)' }}</td>
               <td class="cell-end">
+                <button type="button" class="btn btn-ghost btn-sm" (click)="openItems(group)">Categorías</button>
                 <button type="button" class="btn btn-ghost btn-sm" (click)="openEdit(group)">Editar</button>
                 <button type="button" class="btn btn-danger btn-sm" (click)="askDelete(group)">Eliminar</button>
               </td>
@@ -56,3 +57,5 @@
 <app-confirm-delete-modal
   [itemName]="deleting()?.name || 'este grupo'"
   (confirmed)="onDeleteConfirmed()" />
+
+<app-grupo-items-modal [categories]="categories()" />

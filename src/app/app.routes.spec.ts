@@ -1,5 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { HttpClient } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of } from 'rxjs';
@@ -8,13 +9,16 @@ import { AuthRepository } from '@domain/contracts/auth.repository';
 import { ApiClient } from '@data/http/api-client';
 import { CatalogsRepository } from '@data/repositories/catalogs.repository';
 import { SessionStore } from '@data/auth/session-store';
+import { API_CONFIG } from '@data/config/api-config.token';
 import { SessionFacade } from '@features/auth/session.facade';
 import { routes } from './app.routes';
 
 // La ruta /dashboard bindea HttpDashboardRepository, que compone el snapshot desde ApiClient
 // (courts, coaches, category-groups, catálogos y class-sessions). Se stubea ApiClient acá —
 // no lo re-provee DASHBOARD_PROVIDERS — así los cinco repos HTTP de la feature resuelven sin
-// tocar HttpClient ni la red: este test es de ruteo, no de datos.
+// tocar HttpClient ni la red: este test es de ruteo, no de datos. HttpClient/API_CONFIG se
+// stubean también porque HttpCategoryGroupsRepository los inyecta en el field initializer
+// (para addItem/removeItem, Task 1) aunque esta ruta sólo llame a list().
 //
 // Este TestBed arma sus providers a mano a partir de `routes`, no de `appConfig` (que ya
 // bindea AuthRepository en root desde Task 7): sin este stub, /onboarding tira NG0201 acá
@@ -31,6 +35,8 @@ async function harnessAt(url: string, conSesion = true, mustChangePassword = fal
       { provide: ClubRepository, useValue: { isActive: async () => true } },
       { provide: AuthRepository, useValue: { signup: async () => undefined } },
       { provide: ApiClient, useValue: { get: () => of([]) } },
+      { provide: HttpClient, useValue: {} as HttpClient },
+      { provide: API_CONFIG, useValue: { apiBaseUrl: '/api', realtimeBaseUrl: '' } },
       // En root, igual que en app.config.ts: lo usan Configuración y el dashboard, y una
       // instancia por ruta lazy significaba un cache de catálogos por ruta.
       CatalogsRepository,

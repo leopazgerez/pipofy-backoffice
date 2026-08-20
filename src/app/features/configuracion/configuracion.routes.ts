@@ -5,6 +5,8 @@ import { clubCanDeactivate } from './club/club-can-deactivate.guard';
 import { CanchasFacade } from './canchas/canchas.facade';
 import { CategoriasFacade } from './categorias/categorias.facade';
 import { GruposCategoriaFacade } from './grupos-categoria/grupos-categoria.facade';
+import { GrupoItemsFacade } from './grupos-categoria/grupo-items.facade';
+import { GrupoItemsStore } from './grupos-categoria/grupo-items-store';
 import { PlanesFacade } from './planes/planes.facade';
 import { ProfesoresFacade } from './profesores/profesores.facade';
 import { HorariosFacade } from './horarios/horarios.facade';
@@ -23,6 +25,8 @@ export const CONFIGURACION_ROUTES: Routes = [
       CanchasFacade,
       CategoriasFacade,
       GruposCategoriaFacade,
+      GrupoItemsFacade,
+      GrupoItemsStore,
       PlanesFacade,
       ProfesoresFacade,
       HorariosFacade,

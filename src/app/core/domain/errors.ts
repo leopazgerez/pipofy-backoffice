@@ -154,3 +154,10 @@ export class InvalidScheduleError extends DomainRuleError {
     this.name = 'InvalidScheduleError';
   }
 }
+
+export class InvalidReservationError extends DomainRuleError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidReservationError';
+  }
+}

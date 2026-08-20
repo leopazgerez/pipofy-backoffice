@@ -7,15 +7,14 @@ import {
   WaitlistEntry,
 } from '@domain/entities/dashboard-snapshot';
 import { occupancyPercent } from '@domain/occupancy';
-import { localDateKey } from '@domain/local-date';
 import { catalogLabel } from '@data/catalog-labels';
 import { CatalogItem } from '../dto/catalogs.dto';
-import { ClassSessionDto } from '../dto/class-session.dto';
+import { ClassSession, occupiedSpots } from '@domain/entities/class-session';
+import { localHhMm } from '@domain/local-date';
 
 /**
  * El dashboard no tiene endpoint agregador: el snapshot se ensambla en el front desde cinco
- * fuentes (spec §5.2). Esta función es pura y recibe `today` por parámetro justamente para
- * poder testear el filtro de fecha sin tocar el reloj.
+ * fuentes (spec §5.2). Esta función es pura.
  */
 export interface DashboardSources {
   readonly clubId: string;
@@ -23,30 +22,9 @@ export interface DashboardSources {
   readonly coaches: readonly Coach[];
   readonly categoryGroups: readonly CategoryGroup[];
   readonly surfaceTypes: readonly CatalogItem[];
-  readonly sessions: readonly ClassSessionDto[];
+  readonly sessions: readonly ClassSession[];
   /** sessionId → cuántos esperan. Sólo trae las sesiones llenas que se consultaron. */
   readonly waitingCounts: ReadonlyMap<string, number>;
-  readonly today: Date;
-}
-
-/**
- * ¿Este `startAt` crudo del backend cae en `todayKey`, en hora LOCAL?
- *
- * Es la definición única de "es de hoy", y existe porque hacen falta dos consumidores: este
- * mapper, al armar la grilla, y `HttpDashboardRepository.fetchWaitingCounts`, que decide a qué
- * sesiones pedirles la lista de espera. Escrito dos veces, ya había divergido una vez.
- *
- * Tolera `null` y basura porque `startAt` es nullable en Prisma y nadie lo valida del otro lado.
- * No avisa por consola a propósito: el mapper distingue el motivo del descarte y lo reporta él.
- */
-export function isOnLocalDate(startAt: string | null, todayKey: string): boolean {
-  if (startAt === null) return false;
-  const at = new Date(startAt);
-  return !Number.isNaN(at.getTime()) && localDateKey(at) === todayKey;
-}
-
-function localHhMm(d: Date): string {
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 function courtMeta(court: Court, surfaceOf: ReadonlyMap<string, string>): string {
@@ -63,27 +41,24 @@ export function toDashboardSnapshot(src: DashboardSources): DashboardSnapshot {
   const surfaceOf = new Map(src.surfaceTypes.map((s) => [s.id, s.name]));
   const coachOf = new Map(src.coaches.map((c) => [c.id, c.displayName]));
   const groupOf = new Map(src.categoryGroups.map((g) => [g.id, g.name]));
-  const todayKey = localDateKey(src.today);
 
-  // 1. Filtro de fecha local. El backend interpreta from/to como UTC literal, así que el
-  //    repositorio pide ±1 día y el recorte fino se hace acá.
-  const todays: { readonly dto: ClassSessionDto; readonly hhmm: string; readonly at: Date }[] = [];
-  for (const dto of src.sessions) {
-    if (dto.startAt === null) {
-      console.warn(`[dashboard] sesión ${dto.id} sin startAt: se descarta`);
+  // El filtro de fecha ya lo hizo ClassSessionsRepository.list(): lo que llega acá es del
+  // día pedido. Lo que sigue vivo es la validación de startAt, que además distingue POR QUÉ
+  // descarta para poder avisar.
+  const todays: { readonly session: ClassSession; readonly hhmm: string; readonly at: Date }[] = [];
+  for (const session of src.sessions) {
+    if (session.startAt === null) {
+      console.warn(`[dashboard] sesión ${session.id} sin startAt: se descarta`);
       continue;
     }
-    const at = new Date(dto.startAt);
+    const at = new Date(session.startAt);
     if (Number.isNaN(at.getTime())) {
       console.warn(
-        `[dashboard] sesión ${dto.id} con startAt inválido (${dto.startAt}): se descarta`,
+        `[dashboard] sesión ${session.id} con startAt inválido (${session.startAt}): se descarta`,
       );
       continue;
     }
-    // La comparación es la misma que hace isOnLocalDate(); acá se escribe con `at` ya
-    // parseado porque el loop lo necesita igual y distingue POR QUÉ descarta, para avisar.
-    if (localDateKey(at) !== todayKey) continue;
-    todays.push({ dto, hhmm: localHhMm(at), at });
+    todays.push({ session, hhmm: localHhMm(at), at });
   }
 
   // Orden cronológico: hace que la celda la gane la primera sesión que se escribe, sin
@@ -103,15 +78,18 @@ export function toDashboardSnapshot(src: DashboardSources): DashboardSnapshot {
    * ningún lado, y listarla en el rail sería ofrecer una fila que no lleva a nada — encima
    * con el nombre de cancha vacío.
    */
-  const placed: { readonly dto: ClassSessionDto; readonly hhmm: string; readonly court: string }[] =
-    [];
+  const placed: {
+    readonly session: ClassSession;
+    readonly hhmm: string;
+    readonly court: string;
+  }[] = [];
 
-  for (const { dto, hhmm } of todays) {
-    const court = courtById.get(dto.courtId);
+  for (const { session, hhmm } of todays) {
+    const court = courtById.get(session.courtId);
     if (court === undefined) {
       // Pasa de verdad: CourtsRepository filtra los borrados pero /class-sessions no (§3.5).
       console.warn(
-        `[dashboard] sesión ${dto.id} en cancha desconocida ${dto.courtId}: se descarta`,
+        `[dashboard] sesión ${session.id} en cancha desconocida ${session.courtId}: se descarta`,
       );
       continue;
     }
@@ -124,41 +102,40 @@ export function toDashboardSnapshot(src: DashboardSources): DashboardSnapshot {
       // ordenado. La salida de fondo es que la celda sea una lista, no antes de que un club
       // real tenga solapamientos.
       console.warn(
-        `[dashboard] slot ${hhmm}/${dto.courtId} ya ocupado: se descarta la sesión ${dto.id}`,
+        `[dashboard] slot ${hhmm}/${session.courtId} ya ocupado: se descarta la sesión ${session.id}`,
       );
       continue;
     }
 
-    const capacity = dto.capacity ?? 0;
-    const waiting = src.waitingCounts.get(dto.id) ?? 0;
+    const capacity = session.capacity;
+    const waiting = src.waitingCounts.get(session.id) ?? 0;
     sessions[ri][ci] = {
-      id: dto.id,
-      category: groupOf.get(dto.categoryGroupId) ?? '',
-      professor: coachOf.get(dto.coachId) ?? '',
-      occupied: capacity - dto.availableSpots,
+      id: session.id,
+      category: groupOf.get(session.categoryGroupId) ?? '',
+      professor: coachOf.get(session.coachId) ?? '',
+      occupied: occupiedSpots(session),
       capacity,
-      state: dto.availableSpots > 0 ? 'open' : waiting > 0 ? 'wait' : 'full',
+      state: session.availableSpots > 0 ? 'open' : waiting > 0 ? 'wait' : 'full',
     };
-    placed.push({ dto, hhmm, court: court.name });
+    placed.push({ session, hhmm, court: court.name });
   }
 
   // 4. KPIs sobre las sesiones de hoy, hayan entrado a la grilla o no.
   let occupiedSum = 0;
   let capacitySum = 0;
-  for (const { dto } of todays) {
-    const capacity = dto.capacity ?? 0;
-    capacitySum += capacity;
-    occupiedSum += capacity - dto.availableSpots;
+  for (const { session } of todays) {
+    capacitySum += session.capacity;
+    occupiedSum += occupiedSpots(session);
   }
 
   // 5. Lista de espera: una entrada por sesión VISIBLE con gente esperando.
   const waitlist: WaitlistEntry[] = [];
-  for (const { dto, hhmm, court } of placed) {
-    const n = src.waitingCounts.get(dto.id) ?? 0;
+  for (const { session, hhmm, court } of placed) {
+    const n = src.waitingCounts.get(session.id) ?? 0;
     if (n === 0) continue;
     waitlist.push({
-      id: dto.id,
-      title: `${groupOf.get(dto.categoryGroupId) ?? ''} · ${court} · ${hhmm}`,
+      id: session.id,
+      title: `${groupOf.get(session.categoryGroupId) ?? ''} · ${court} · ${hhmm}`,
       meta: `${n} en espera · cupo lleno`,
     });
   }

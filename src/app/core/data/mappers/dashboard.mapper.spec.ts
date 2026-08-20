@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { MockInstance } from 'vitest';
 import { toDashboardSnapshot, DashboardSources } from './dashboard.mapper';
 import { Court } from '@domain/entities/court';
-import { ClassSessionDto } from '../dto/class-session.dto';
+import { ClassSession } from '@domain/entities/class-session';
 
 /**
  * El spy se instala y se restaura por hook y no dentro de cada `it`: con `mockRestore()` al
@@ -18,13 +18,13 @@ afterEach(() => {
   warn.mockRestore();
 });
 
-// 05/08/2026 a las 12:00 hora LOCAL. Todos los casos se apoyan en esta fecha.
-const TODAY = new Date(2026, 7, 5, 12, 0, 0);
-
-/** Un startAt en hora local, para no tener que razonar el offset en cada caso. */
+/**
+ * Un startAt en hora local, para no tener que razonar el offset en cada caso. Día por
+ * defecto: 05/08/2026.
+ */
 const at = (h: number, m = 0, day = 5) => new Date(2026, 7, day, h, m, 0).toISOString();
 
-const session = (over: Partial<ClassSessionDto> = {}): ClassSessionDto => ({
+const session = (over: Partial<ClassSession> = {}): ClassSession => ({
   id: '10',
   courtId: '1',
   coachId: '2',
@@ -53,7 +53,6 @@ const sources = (over: Partial<DashboardSources> = {}): DashboardSources => ({
   surfaceTypes: [{ id: '9', name: 'cemento' }],
   sessions: [session()],
   waitingCounts: new Map(),
-  today: TODAY,
   ...over,
 });
 
@@ -72,8 +71,9 @@ describe('toDashboardSnapshot — columnas y meta', () => {
 
 describe('toDashboardSnapshot — filtro de fecha local', () => {
   it('incluye una sesión de las 22:00 hora local', () => {
-    // El caso que rompe el bug §3.2: pedimos ±1 día porque el backend interpreta la ventana
-    // en UTC, y acá filtramos por fecha local. Sin esto se perderían las clases nocturnas.
+    // Regresión del bug §3.2 (el backend interpreta la ventana en UTC): el recorte por fecha
+    // local ahora lo hace ClassSessionsRepository.list() antes de llegar acá, pero esta sesión
+    // de las 22:00 locales sigue teniendo que aparecer entera en la grilla y en el KPI.
     const snap = toDashboardSnapshot(sources({ sessions: [session({ startAt: at(22) })] }));
     expect(snap.grid.hours).toEqual(['22:00']);
     expect(snap.kpis.sessionsToday).toBe(1);
@@ -90,23 +90,19 @@ describe('toDashboardSnapshot — filtro de fecha local', () => {
     expect(snap.kpis.sessionsToday).toBe(1);
   });
 
-  it('descarta las sesiones de ayer y de mañana', () => {
-    const snap = toDashboardSnapshot(
-      sources({
-        sessions: [
-          session({ id: 'a', startAt: at(22, 0, 4) }),
-          session({ id: 'b', startAt: at(9, 0, 6) }),
-        ],
-      }),
-    );
-    expect(snap.kpis.sessionsToday).toBe(0);
-    expect(snap.grid.hours).toEqual([]);
-  });
-
   it('descarta las sesiones sin startAt', () => {
     const snap = toDashboardSnapshot(sources({ sessions: [session({ startAt: null })] }));
     expect(snap.kpis.sessionsToday).toBe(0);
     expect(warn).toHaveBeenCalled();
+  });
+
+  it('ya no filtra por fecha: confía en que el repositorio entregó el día pedido', () => {
+    // Contrato con ClassSessionsRepository.list(): el recorte por fecha local ahora vive en el
+    // repositorio. Si el mapper volviera a filtrar, la misma sesión pasaría por dos filtros
+    // distintos y bastaría con que uno de los dos estuviera mal.
+    const otroDia = new Date(2026, 7, 6, 18, 0, 0).toISOString();
+    const snap = toDashboardSnapshot(sources({ sessions: [session({ startAt: otroDia })] }));
+    expect(snap.kpis.sessionsToday).toBe(1);
   });
 });
 
@@ -129,10 +125,12 @@ describe('toDashboardSnapshot — celdas', () => {
     expect(snap.grid.sessions[0][1]).toBeNull();
   });
 
-  it('normaliza capacity null a 0', () => {
-    // El backend calcula availableSpots = max(0, 0 − ocupados) = 0 cuando capacity es null.
+  it('capacity 0 no rompe la celda: occupied y capacity quedan en 0', () => {
+    // La normalización de null a 0 vive en class-session.mapper.ts y está testeada ahí; acá
+    // sólo se confirma que la celda no se rompe con capacity 0: occupied = capacity −
+    // availableSpots da 0, no negativo ni NaN.
     const snap = toDashboardSnapshot(
-      sources({ sessions: [session({ capacity: null, availableSpots: 0 })] }),
+      sources({ sessions: [session({ capacity: 0, availableSpots: 0 })] }),
     );
     expect(snap.grid.sessions[0][0]).toMatchObject({ occupied: 0, capacity: 0, state: 'full' });
   });

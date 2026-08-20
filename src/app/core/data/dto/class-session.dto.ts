@@ -28,11 +28,27 @@ export type ClassSessionDto = v.InferOutput<typeof ClassSessionDtoSchema>;
 
 /**
  * `GET /class-sessions/:id/waiting-list` devuelve las entradas en estado 'esperando' de UNA
- * sesión. El dashboard sólo usa el LARGO del array para saber cuánta gente espera: nunca lee
- * un campo de las entradas.
+ * sesión, como filas crudas de Prisma.
  *
- * Por eso valida el array y no su contenido. Exigir una forma a los elementos sería una
- * asunción sobre el borde que ningún consumidor necesita, y que haría fallar el v.parse
- * —tumbando la lista de espera— por un campo que nadie lee.
+ * Antes esto era `v.array(v.unknown())` porque el único consumidor —el dashboard— sólo usaba
+ * el LARGO del array. La pantalla de reservas sí lee adentro: muestra al alumno y necesita el
+ * `id` de la anotación para poder darla de baja.
  */
-export const WaitingListDtoSchema = v.array(v.unknown());
+export const WaitingListEntryDtoSchema = v.object({
+  id: v.string(),
+  studentId: v.string(),
+  requestedAt: v.nullable(v.string()),
+});
+export type WaitingListEntryDto = v.InferOutput<typeof WaitingListEntryDtoSchema>;
+
+export const WaitingListDtoSchema = v.array(WaitingListEntryDtoSchema);
+
+/**
+ * Lo que devuelve `POST /class-sessions/:id/reservations`: la fila de Prisma entera. Se
+ * declaran sólo los dos campos que la pantalla no puede reconstruir; valibot descarta el resto.
+ */
+export const ReservationDtoSchema = v.object({
+  id: v.string(),
+  holdExpiresAt: v.nullable(v.string()),
+});
+export type ReservationDto = v.InferOutput<typeof ReservationDtoSchema>;

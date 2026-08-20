@@ -13,3 +13,33 @@ export function localDateKey(d: Date): string {
   const day = String(d.getDate()).padStart(2, '0');
   return `${d.getFullYear()}-${month}-${day}`;
 }
+
+/**
+ * ¿Este `startAt` crudo del backend cae en `dateKey`, en hora LOCAL?
+ *
+ * Vive junto a localDateKey porque es la otra mitad de la misma pregunta, y en `domain`
+ * porque la usan `data` (el repositorio de clases, para recortar la ventana ±1 día) y el
+ * mapper del dashboard. Estuvo escrita dos veces y ya había divergido una vez.
+ *
+ * Tolera `null` y basura porque `startAt` es nullable en Prisma y nadie lo valida del otro
+ * lado. No avisa por consola a propósito: quien la llama distingue el motivo del descarte.
+ */
+export function isOnLocalDate(startAt: string | null, dateKey: string): boolean {
+  if (startAt === null) return false;
+  const at = new Date(startAt);
+  return !Number.isNaN(at.getTime()) && localDateKey(at) === dateKey;
+}
+
+/**
+ * 'HH:mm' en hora LOCAL de un `Date` ya válido.
+ *
+ * Vive junto a las otras dos por el mismo motivo (data la necesita y no puede importar de
+ * shared). Estuvo escrita dos veces — dashboard.mapper.ts y reservas-page.component.ts — y
+ * ya era la otra mitad exacta de la misma pregunta que isOnLocalDate.
+ *
+ * No valida `d`: a quien parsea el ISO crudo (nullable, a veces inválido) le toca decidir qué
+ * hacer con eso ANTES de llamar acá — ver hora() en reservas-page.component.ts.
+ */
+export function localHhMm(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}

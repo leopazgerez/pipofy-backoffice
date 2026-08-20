@@ -33,7 +33,7 @@ async function setup(url: string) {
 }
 
 describe('ShellComponent', () => {
-  it('renderiza los 6 destinos de la nav', async () => {
+  it('renderiza los 7 destinos de la nav', async () => {
     const harness = await setup('/dashboard');
     const labels = Array.from(harness.fixture.nativeElement.querySelectorAll('.nav a'))
       .map((a) => (a as HTMLElement).textContent?.trim() ?? '');

@@ -3,7 +3,10 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { GruposCategoriaPageComponent } from './grupos-categoria-page.component';
 import { GruposCategoriaFacade } from './grupos-categoria.facade';
+import { GrupoItemsStore } from './grupo-items-store';
+import { GrupoItemsFacade } from './grupo-items.facade';
 import { CategoryGroupsRepository } from '@domain/contracts/category-groups.repository';
+import { CategoriesRepository } from '@domain/contracts/categories.repository';
 import { CategoryGroup, CategoryGroupDraft } from '@domain/entities/category-group';
 
 const GRUPOS: CategoryGroup[] = [
@@ -30,7 +33,17 @@ async function mount(over: Partial<CategoryGroupsRepository> = {}) {
     providers: [
       provideZonelessChangeDetection(),
       GruposCategoriaFacade,
+      GrupoItemsStore,
+      GrupoItemsFacade,
       { provide: CategoryGroupsRepository, useValue: repo },
+      // La página lo pide para poblar las checkboxes del modal de categorías. Devuelve [] :
+      // ningún test de esta pantalla mira el contenido del modal.
+      { provide: CategoriesRepository, useValue: {
+          list: async () => [],
+          create: async () => undefined,
+          update: async () => undefined,
+          remove: async () => undefined,
+        } as CategoriesRepository },
     ],
   });
   const fixture = TestBed.createComponent(GruposCategoriaPageComponent);
@@ -63,19 +76,21 @@ describe('GruposCategoriaPageComponent', () => {
     buscador(el).value = 'zzz';
     buscador(el).dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    expect(el.querySelector('.a-empty')!.textContent).toContain('Ningún grupo coincide');
+    // Escopado a .panel: el modal de categorías tiene su propio .a-empty, siempre en el DOM
+    // aunque el <dialog> esté cerrado (Angular no lo desmonta), y colisiona con este selector.
+    expect(el.querySelector('.panel .a-empty')!.textContent).toContain('Ningún grupo coincide');
   });
 
   it('una lista vacía muestra el vacío de "todavía no cargaste"', async () => {
     const { el } = await mount({ list: async () => [] });
-    expect(el.querySelector('.a-empty')!.textContent).toContain('Todavía no cargaste');
+    expect(el.querySelector('.panel .a-empty')!.textContent).toContain('Todavía no cargaste');
   });
 
   it('si la carga FALLA muestra el banner y NO el vacío', async () => {
     // Con data() en null la carga falló: decir "todavía no cargaste ningún grupo" sería mentir.
     const { el } = await mount({ list: () => Promise.reject({ kind: 'forbidden' as const }) });
     expect(el.querySelector('[role="alert"]')).not.toBeNull();
-    expect(el.querySelector('.a-empty')).toBeNull();
+    expect(el.querySelector('.panel .a-empty')).toBeNull();
   });
 
   /**
